@@ -19,11 +19,17 @@
 - For Kotlin, follow Google's [Kotlin style guide](https://developer.android.com/kotlin/style-guide).
 - For Bazel, follow [BUILD Style Guide](https://bazel.build/build/style-guide).
 
+## Build
+
+- Bazel with Bzlmod. Run `bazel test //...` to test everything.
+- `kt_jvm_test` uses JUnit 4 runner. Use `kotlin-test-junit` (not junit5).
+- No lock files checked in for now (solo project). Re-add when collaborators join.
+
 ## Project layout
 
 - Follow Google/Bazel conventions: flat, package-per-feature layout.
 - Co-locate tests with the source they test in the same package.
-- Development happens inside the devcontainer (VS Code Dev Containers).
+- Development happens on the host. The devcontainer is reserved for non-build tooling (formatters, linters, etc.).
 
 ## Commit style
 
