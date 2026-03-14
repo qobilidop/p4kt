@@ -12,6 +12,18 @@ This project uses a [devcontainer](https://containers.dev/) for development. All
 
 The `./dev` script runs commands inside the devcontainer. Omit it if you're already inside.
 
+### Format
+
+```sh
+./dev format
+```
+
+To check without modifying (used in CI):
+
+```sh
+./dev format --check
+```
+
 ### Build
 
 ```sh

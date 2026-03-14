@@ -1,3 +1,13 @@
 #!/bin/sh
 
-exec devcontainer exec --workspace-folder "$(dirname "$0")" "$@"
+WORKSPACE="$(dirname "$0")"
+
+case "$1" in
+format)
+	shift
+	exec devcontainer exec --workspace-folder "$WORKSPACE" tools/format.sh "$@"
+	;;
+*)
+	exec devcontainer exec --workspace-folder "$WORKSPACE" "$@"
+	;;
+esac

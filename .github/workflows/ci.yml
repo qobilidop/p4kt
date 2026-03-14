@@ -1,0 +1,27 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build devcontainer
+        uses: devcontainers/ci@v0.3
+        with:
+          runCmd: echo "Devcontainer ready"
+      - name: Format check
+        uses: devcontainers/ci@v0.3
+        with:
+          runCmd: tools/format.sh --check
+      - name: Build
+        uses: devcontainers/ci@v0.3
+        with:
+          runCmd: bazel build //...
+      - name: Test
+        uses: devcontainers/ci@v0.3
+        with:
+          runCmd: bazel test //...

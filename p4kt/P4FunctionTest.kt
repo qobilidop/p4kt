@@ -4,20 +4,22 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class P4FunctionTest {
-    @Test
-    fun identityFunction() {
-        val id = p4Function("id", bit(8)) {
-            val x by param(bit(8), IN)
-            return_(x)
-        }
+  @Test
+  fun identityFunction() {
+    val id =
+      p4Function("id", bit(8)) {
+        val x by param(bit(8), IN)
+        return_(x)
+      }
 
-        assertEquals(
-            """
+    assertEquals(
+      """
             function bit<8> id(in bit<8> x) {
                 return x;
             }
-            """.trimIndent(),
-            id.toP4()
-        )
-    }
+            """
+        .trimIndent(),
+      id.toP4(),
+    )
+  }
 }

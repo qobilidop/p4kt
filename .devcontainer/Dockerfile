@@ -1,5 +1,7 @@
 FROM ubuntu:24.04
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 ARG TARGETARCH
 
 ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-${TARGETARCH}
@@ -11,11 +13,32 @@ RUN apt-get update \
         curl \
         git \
         openjdk-21-jdk-headless \
-    && rm -rf /var/lib/apt/lists/*
+        python3-pip \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip3 install --no-cache-dir --break-system-packages mdformat==0.7.21
 
 ARG BAZELISK_VERSION=v1.28.1
 RUN curl -fsSL "https://github.com/bazelbuild/bazelisk/releases/download/${BAZELISK_VERSION}/bazelisk-linux-${TARGETARCH}" \
         -o /usr/local/bin/bazel \
     && chmod +x /usr/local/bin/bazel
+
+ARG KTFMT_VERSION=0.54
+RUN curl -fsSL "https://github.com/facebook/ktfmt/releases/download/v${KTFMT_VERSION}/ktfmt-${KTFMT_VERSION}-jar-with-dependencies.jar" \
+        -o /usr/local/lib/ktfmt.jar
+
+ARG BUILDIFIER_VERSION=8.0.3
+RUN curl -fsSL "https://github.com/bazelbuild/buildtools/releases/download/v${BUILDIFIER_VERSION}/buildifier-linux-${TARGETARCH}" \
+        -o /usr/local/bin/buildifier \
+    && chmod +x /usr/local/bin/buildifier
+
+ARG SHFMT_VERSION=3.11.0
+RUN curl -fsSL "https://github.com/mvdan/sh/releases/download/v${SHFMT_VERSION}/shfmt_v${SHFMT_VERSION}_linux_${TARGETARCH}" \
+        -o /usr/local/bin/shfmt \
+    && chmod +x /usr/local/bin/shfmt
+
+ARG YAMLFMT_VERSION=0.21.0
+RUN YAMLFMT_ARCH=$([ "$TARGETARCH" = "arm64" ] && echo "arm64" || echo "x86_64") \
+    && curl -fsSL "https://github.com/google/yamlfmt/releases/download/v${YAMLFMT_VERSION}/yamlfmt_${YAMLFMT_VERSION}_Linux_${YAMLFMT_ARCH}.tar.gz" \
+        | tar xz -C /usr/local/bin yamlfmt
 
 USER ubuntu

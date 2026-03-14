@@ -15,8 +15,8 @@ User code (DSL) → IR (immutable data classes) → Renderer (P4 source text)
 ```
 
 1. **IR** - Sealed class hierarchies for types, expressions, statements, and declarations. Immutable data classes. This is the core.
-2. **DSL** - Mutable builder classes that produce IR nodes. Uses Kotlin delegated properties for type-safe variable references. The DSL is the public API; the IR is an internal implementation detail.
-3. **Renderer** - Traverses IR nodes, emits P4 source text via `toP4()` extension functions. `toP4()` on a function declaration returns a complete, formatted P4 function definition as a string using 4-space indentation, with no preamble or includes.
+1. **DSL** - Mutable builder classes that produce IR nodes. Uses Kotlin delegated properties for type-safe variable references. The DSL is the public API; the IR is an internal implementation detail.
+1. **Renderer** - Traverses IR nodes, emits P4 source text via `toP4()` extension functions. `toP4()` on a function declaration returns a complete, formatted P4 function definition as a string using 4-space indentation, with no preamble or includes.
 
 ## Scope
 
@@ -63,6 +63,7 @@ Trailing underscores on `if_`, `else_`, `return_` avoid Kotlin keyword collision
 ### Simple function
 
 P4:
+
 ```p4
 function bit<8> max(in bit<8> a, in bit<8> b) {
     if (a > b) {
@@ -73,6 +74,7 @@ function bit<8> max(in bit<8> a, in bit<8> b) {
 ```
 
 P4kt:
+
 ```kotlin
 val max = p4Function("max", bit(8)) {
     val a by param(bit(8), IN)
@@ -88,6 +90,7 @@ val max = p4Function("max", bit(8)) {
 ### Void function with out parameters
 
 P4:
+
 ```p4
 function void swap(inout bit<8> x, inout bit<8> y) {
     bit<8> tmp = x;
@@ -97,6 +100,7 @@ function void swap(inout bit<8> x, inout bit<8> y) {
 ```
 
 P4kt:
+
 ```kotlin
 val swap = p4Function("swap", void_) {
     val x by param(bit(8), INOUT)
@@ -111,6 +115,7 @@ val swap = p4Function("swap", void_) {
 ### Function with bool and bitwise ops
 
 P4:
+
 ```p4
 function bool is_even(in bit<16> n) {
     return (n & 1) == 0;
@@ -118,6 +123,7 @@ function bool is_even(in bit<16> n) {
 ```
 
 P4kt:
+
 ```kotlin
 val isEven = p4Function("is_even", bool_) {
     val n by param(bit(16), IN)
