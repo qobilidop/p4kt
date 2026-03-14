@@ -1,3 +1,3 @@
-# P4kt ("Packet")
+# P4kt
 
-[P4](https://p4.org) as embedded domain-specific language (eDSL) in Kotlin.
+P4kt (pronounced "packet") is an embedded domain-specific language (eDSL) for [P4](https://p4.org) in Kotlin.
