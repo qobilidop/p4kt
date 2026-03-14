@@ -17,6 +17,10 @@ jobs:
         uses: devcontainers/ci@v0.3
         with:
           runCmd: tools/format.sh --check
+      - name: Lint
+        uses: devcontainers/ci@v0.3
+        with:
+          runCmd: tools/lint.sh
       - name: Build
         uses: devcontainers/ci@v0.3
         with:

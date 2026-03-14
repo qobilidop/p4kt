@@ -24,6 +24,12 @@ To check without modifying (used in CI):
 ./dev format --check
 ```
 
+### Lint
+
+```sh
+./dev lint
+```
+
 ### Build
 
 ```sh

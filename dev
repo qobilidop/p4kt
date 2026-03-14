@@ -7,6 +7,10 @@ format)
 	shift
 	exec devcontainer exec --workspace-folder "$WORKSPACE" tools/format.sh "$@"
 	;;
+lint)
+	shift
+	exec devcontainer exec --workspace-folder "$WORKSPACE" tools/lint.sh "$@"
+	;;
 *)
 	exec devcontainer exec --workspace-folder "$WORKSPACE" "$@"
 	;;

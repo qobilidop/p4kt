@@ -39,7 +39,7 @@ fi
 
 # Shell (shfmt)
 echo "Formatting Shell..."
-SHELL_FILES="dev tools/format.sh"
+SHELL_FILES="dev tools/format.sh tools/lint.sh"
 if [ "$CHECK" = true ]; then
 	# shellcheck disable=SC2086
 	shfmt -d $SHELL_FILES || FAILED=true

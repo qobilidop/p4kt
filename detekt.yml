@@ -1,0 +1,20 @@
+naming:
+  PackageNaming:
+    packagePattern: '[a-z]+(\.[a-z][A-Za-z0-9]*)*'
+    active: false
+  FunctionNaming:
+    ignoreAnnotated:
+      - 'Test'
+    functionPattern: '[a-z][a-zA-Z0-9_]*'
+style:
+  MagicNumber:
+    ignoreNumbers:
+      - '-1'
+      - '0'
+      - '1'
+      - '2'
+      - '8'
+      - '16'
+      - '32'
+    ignoreAnnotated:
+      - 'Test'

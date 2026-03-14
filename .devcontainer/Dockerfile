@@ -14,8 +14,9 @@ RUN apt-get update \
         git \
         openjdk-21-jdk-headless \
         python3-pip \
+        shellcheck \
     && rm -rf /var/lib/apt/lists/* \
-    && pip3 install --no-cache-dir --break-system-packages mdformat==0.7.21
+    && pip3 install --no-cache-dir --break-system-packages mdformat==0.7.21 yamllint==1.37.0
 
 ARG BAZELISK_VERSION=v1.28.1
 RUN curl -fsSL "https://github.com/bazelbuild/bazelisk/releases/download/${BAZELISK_VERSION}/bazelisk-linux-${TARGETARCH}" \
@@ -36,9 +37,19 @@ RUN curl -fsSL "https://github.com/mvdan/sh/releases/download/v${SHFMT_VERSION}/
         -o /usr/local/bin/shfmt \
     && chmod +x /usr/local/bin/shfmt
 
+ARG DETEKT_VERSION=1.23.8
+RUN curl -fsSL "https://github.com/detekt/detekt/releases/download/v${DETEKT_VERSION}/detekt-cli-${DETEKT_VERSION}-all.jar" \
+        -o /usr/local/lib/detekt.jar
+
 ARG YAMLFMT_VERSION=0.21.0
 RUN YAMLFMT_ARCH=$([ "$TARGETARCH" = "arm64" ] && echo "arm64" || echo "x86_64") \
     && curl -fsSL "https://github.com/google/yamlfmt/releases/download/v${YAMLFMT_VERSION}/yamlfmt_${YAMLFMT_VERSION}_Linux_${YAMLFMT_ARCH}.tar.gz" \
         | tar xz -C /usr/local/bin yamlfmt
+
+ARG HADOLINT_VERSION=2.14.0
+RUN HADOLINT_ARCH=$([ "$TARGETARCH" = "arm64" ] && echo "arm64" || echo "x86_64") \
+    && curl -fsSL "https://github.com/hadolint/hadolint/releases/download/v${HADOLINT_VERSION}/hadolint-linux-${HADOLINT_ARCH}" \
+        -o /usr/local/bin/hadolint \
+    && chmod +x /usr/local/bin/hadolint
 
 USER ubuntu
