@@ -33,14 +33,6 @@ shellcheck $SHELL_FILES || FAILED=true
 echo "Linting Dockerfile..."
 hadolint .devcontainer/Dockerfile || FAILED=true
 
-# YAML (yamllint)
-echo "Linting YAML..."
-YAML_FILES=$(find . \( -name '*.yml' -o -name '*.yaml' \) -not -path '*/bazel-*/*')
-if [ -n "$YAML_FILES" ]; then
-	# shellcheck disable=SC2086
-	yamllint $YAML_FILES || FAILED=true
-fi
-
 if [ "$FAILED" = true ]; then
 	echo "Linting failed."
 	exit 1

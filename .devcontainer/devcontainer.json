@@ -1,15 +1,15 @@
 {
-    "name": "P4kt",
-    "build": {
-        "dockerfile": "Dockerfile"
-    },
-    "remoteUser": "ubuntu",
-    "customizations": {
-        "vscode": {
-            "extensions": [
-                "fwcd.kotlin",
-                "BazelBuild.vscode-bazel"
-            ]
-        }
+  "name": "P4kt",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "remoteUser": "ubuntu",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "fwcd.kotlin",
+        "BazelBuild.vscode-bazel"
+      ]
     }
+  }
 }

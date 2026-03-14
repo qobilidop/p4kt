@@ -48,30 +48,12 @@ else
 	shfmt -w $SHELL_FILES
 fi
 
-# Markdown (mdformat)
-echo "Formatting Markdown..."
-MD_FILES=$(find . -name '*.md' -not -path '*/bazel-*/*')
-if [ -n "$MD_FILES" ]; then
-	if [ "$CHECK" = true ]; then
-		# shellcheck disable=SC2086
-		mdformat --wrap no --check $MD_FILES || FAILED=true
-	else
-		# shellcheck disable=SC2086
-		mdformat --wrap no $MD_FILES
-	fi
-fi
-
-# YAML (yamlfmt)
-echo "Formatting YAML..."
-YAML_FILES=$(find . \( -name '*.yml' -o -name '*.yaml' \) -not -path '*/bazel-*/*')
-if [ -n "$YAML_FILES" ]; then
-	if [ "$CHECK" = true ]; then
-		# shellcheck disable=SC2086
-		yamlfmt -dry -quiet $YAML_FILES || FAILED=true
-	else
-		# shellcheck disable=SC2086
-		yamlfmt $YAML_FILES
-	fi
+# Markdown, JSON, YAML (dprint)
+echo "Formatting Markdown, JSON, YAML..."
+if [ "$CHECK" = true ]; then
+	dprint check || FAILED=true
+else
+	dprint fmt
 fi
 
 if [ "$FAILED" = true ]; then

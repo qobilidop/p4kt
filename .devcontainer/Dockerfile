@@ -13,10 +13,9 @@ RUN apt-get update \
         curl \
         git \
         openjdk-21-jdk-headless \
-        python3-pip \
         shellcheck \
-    && rm -rf /var/lib/apt/lists/* \
-    && pip3 install --no-cache-dir --break-system-packages mdformat==0.7.21 yamllint==1.37.0
+        unzip \
+    && rm -rf /var/lib/apt/lists/*
 
 ARG BAZELISK_VERSION=v1.28.1
 RUN curl -fsSL "https://github.com/bazelbuild/bazelisk/releases/download/${BAZELISK_VERSION}/bazelisk-linux-${TARGETARCH}" \
@@ -41,10 +40,13 @@ ARG DETEKT_VERSION=1.23.8
 RUN curl -fsSL "https://github.com/detekt/detekt/releases/download/v${DETEKT_VERSION}/detekt-cli-${DETEKT_VERSION}-all.jar" \
         -o /usr/local/lib/detekt.jar
 
-ARG YAMLFMT_VERSION=0.21.0
-RUN YAMLFMT_ARCH=$([ "$TARGETARCH" = "arm64" ] && echo "arm64" || echo "x86_64") \
-    && curl -fsSL "https://github.com/google/yamlfmt/releases/download/v${YAMLFMT_VERSION}/yamlfmt_${YAMLFMT_VERSION}_Linux_${YAMLFMT_ARCH}.tar.gz" \
-        | tar xz -C /usr/local/bin yamlfmt
+ARG DPRINT_VERSION=0.52.0
+RUN DPRINT_ARCH=$([ "$TARGETARCH" = "arm64" ] && echo "aarch64" || echo "x86_64") \
+    && curl -fsSL "https://github.com/dprint/dprint/releases/download/${DPRINT_VERSION}/dprint-${DPRINT_ARCH}-unknown-linux-gnu.zip" \
+        -o /tmp/dprint.zip \
+    && unzip -o /tmp/dprint.zip -d /usr/local/bin dprint \
+    && chmod +x /usr/local/bin/dprint \
+    && rm /tmp/dprint.zip
 
 ARG HADOLINT_VERSION=2.14.0
 RUN HADOLINT_ARCH=$([ "$TARGETARCH" = "arm64" ] && echo "arm64" || echo "x86_64") \
