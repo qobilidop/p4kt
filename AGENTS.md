@@ -19,9 +19,16 @@
 - For Kotlin, follow Google's [Kotlin style guide](https://developer.android.com/kotlin/style-guide).
 - For Bazel, follow [BUILD Style Guide](https://bazel.build/build/style-guide).
 
+## Project layout
+
+- Follow Google/Bazel conventions: flat, package-per-feature layout.
+- Co-locate tests with the source they test in the same package.
+- Development happens inside the devcontainer (VS Code Dev Containers).
+
 ## Commit style
 
 - Keep the subject line under 72 characters.
 - Explain why the change is being made.
 - Describe what has changed at a high level. Don't repeat what's obvious in the change itself.
+- Prefer one commit per logical change. Don't split into many tiny commits when they form a single unit of work.
 - Credit yourself (e.g. using the `Co-authored-by:` field) for commits you made.
