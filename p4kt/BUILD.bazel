@@ -2,7 +2,12 @@ load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library", "kt_jvm_test")
 
 kt_jvm_library(
     name = "p4kt",
-    srcs = ["P4kt.kt"],
+    srcs = [
+        "Dsl.kt",
+        "Emit.kt",
+        "Ir.kt",
+        "P4kt.kt",
+    ],
     visibility = ["//visibility:public"],
 )
 
@@ -10,6 +15,17 @@ kt_jvm_test(
     name = "P4ktTest",
     srcs = ["P4ktTest.kt"],
     test_class = "p4kt.P4ktTest",
+    deps = [
+        ":p4kt",
+        "@maven//:org_jetbrains_kotlin_kotlin_test",
+        "@maven//:org_jetbrains_kotlin_kotlin_test_junit",
+    ],
+)
+
+kt_jvm_test(
+    name = "P4FunctionTest",
+    srcs = ["P4FunctionTest.kt"],
+    test_class = "p4kt.P4FunctionTest",
     deps = [
         ":p4kt",
         "@maven//:org_jetbrains_kotlin_kotlin_test",
