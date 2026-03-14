@@ -1,2 +1,8 @@
+# Claude Code plugin artifacts
 docs/superpowers/
+
+# Bazel output symlinks (bazel-bin, bazel-out, bazel-testlogs, etc.)
 /bazel-*
+
+# Generated lock files; re-add when collaborators join for reproducibility
+MODULE.bazel.lock

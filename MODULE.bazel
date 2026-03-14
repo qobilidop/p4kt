@@ -11,12 +11,9 @@ maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
     artifacts = [
         "org.jetbrains.kotlin:kotlin-test:2.1.10",
-        "org.jetbrains.kotlin:kotlin-test-junit5:2.1.10",
-        "org.junit.jupiter:junit-jupiter-api:5.12.2",
-        "org.junit.jupiter:junit-jupiter-engine:5.12.2",
-        "org.junit.platform:junit-platform-launcher:1.12.2",
+        "org.jetbrains.kotlin:kotlin-test-junit:2.1.10",
     ],
-    lock_file = "//:maven_install.json",
+    known_contributing_modules = ["protobuf"],
 )
 
 use_repo(maven, "maven")
