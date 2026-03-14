@@ -1,0 +1,3 @@
+#!/bin/sh
+
+exec devcontainer exec --workspace-folder "$(dirname "$0")" "$@"

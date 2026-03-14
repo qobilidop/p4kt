@@ -12,6 +12,7 @@
 
 - For titles, use Title Case.
 - For non-title section headings, use Sentence case.
+- Use plain hyphens (-) instead of em dashes.
 - Optimize for human readability.
 
 ## Code style
@@ -21,7 +22,7 @@
 
 ## Build
 
-- Bazel with Bzlmod. Run `bazel test //...` to test everything.
+- Bazel with Bzlmod. See `docs/dev.md` for commands.
 - `kt_jvm_test` uses JUnit 4 runner. Use `kotlin-test-junit` (not junit5).
 - No lock files checked in for now (solo project). Re-add when collaborators join.
 
@@ -29,7 +30,7 @@
 
 - Follow Google/Bazel conventions: flat, package-per-feature layout.
 - Co-locate tests with the source they test in the same package.
-- Development happens on the host. The devcontainer is reserved for non-build tooling (formatters, linters, etc.).
+- Development uses devcontainer. See `docs/dev.md`.
 
 ## Commit style
 

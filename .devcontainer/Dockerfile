@@ -6,6 +6,7 @@ ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-${TARGETARCH}
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
+        build-essential \
         ca-certificates \
         curl \
         git \
@@ -17,7 +18,4 @@ RUN curl -fsSL "https://github.com/bazelbuild/bazelisk/releases/download/${BAZEL
         -o /usr/local/bin/bazel \
     && chmod +x /usr/local/bin/bazel
 
-RUN groupadd -g 1000 vscode \
-    && useradd -m -u 1000 -g 1000 -s /bin/bash vscode
-
-USER vscode
+USER ubuntu
