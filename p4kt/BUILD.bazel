@@ -1,0 +1,20 @@
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library", "kt_jvm_test")
+
+kt_jvm_library(
+    name = "p4kt",
+    srcs = ["P4kt.kt"],
+    visibility = ["//visibility:public"],
+)
+
+kt_jvm_test(
+    name = "P4ktTest",
+    srcs = ["P4ktTest.kt"],
+    deps = [
+        ":p4kt",
+        "@maven//:org_jetbrains_kotlin_kotlin_test",
+        "@maven//:org_jetbrains_kotlin_kotlin_test_junit5",
+        "@maven//:org_junit_jupiter_junit_jupiter_api",
+        "@maven//:org_junit_jupiter_junit_jupiter_engine",
+        "@maven//:org_junit_platform_junit_platform_launcher",
+    ],
+)
