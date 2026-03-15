@@ -4,4 +4,6 @@ golden_test(name = "identity")
 
 golden_test(name = "max")
 
+golden_test(name = "ttl_decrement")
+
 golden_test(name = "vss_types")
