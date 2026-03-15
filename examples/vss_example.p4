@@ -38,18 +38,18 @@ struct OutControl {
     PortId outputPort;
 }
 
-control TopPipe(inout Ipv4_h headers_ip, inout Ethernet_h headers_ethernet, out OutControl outCtrl) {
+control TopPipe(inout Parsed_packet headers, out OutControl outCtrl) {
     action Drop_action() {
         outCtrl.outputPort = DROP_PORT;
     }
     IPv4Address nextHop;
     action Set_nhop(IPv4Address ipv4_dest, PortId port) {
         nextHop = ipv4_dest;
-        headers_ip.ttl = (headers_ip.ttl - 1);
+        headers.ip.ttl = (headers.ip.ttl - 1);
         outCtrl.outputPort = port;
     }
     table ipv4_match {
-        key = { headers_ip.dstAddr : lpm; }
+        key = { headers.ip.dstAddr : lpm; }
         actions = {
             Drop_action;
             Set_nhop;
@@ -61,14 +61,14 @@ control TopPipe(inout Ipv4_h headers_ip, inout Ethernet_h headers_ethernet, out 
         outCtrl.outputPort = CPU_OUT_PORT;
     }
     table check_ttl {
-        key = { headers_ip.ttl : exact; }
+        key = { headers.ip.ttl : exact; }
         actions = {
             Send_to_cpu;
         }
         const default_action = Send_to_cpu;
     }
     action Set_dmac(EthernetAddress dmac) {
-        headers_ethernet.dstAddr = dmac;
+        headers.ethernet.dstAddr = dmac;
     }
     table dmac {
         key = { nextHop : exact; }
@@ -80,7 +80,7 @@ control TopPipe(inout Ipv4_h headers_ip, inout Ethernet_h headers_ethernet, out 
         default_action = Drop_action;
     }
     action Set_smac(EthernetAddress smac) {
-        headers_ethernet.srcAddr = smac;
+        headers.ethernet.srcAddr = smac;
     }
     table smac {
         key = { outCtrl.outputPort : exact; }

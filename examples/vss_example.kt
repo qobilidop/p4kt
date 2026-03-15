@@ -38,8 +38,8 @@ fun main() {
     header(::Ipv4_h)
 
     class Parsed_packet(base: P4Expr) : StructRef(base) {
-      val ethernet by field(typeName("Ethernet_h"))
-      val ip by field(typeName("Ipv4_h"))
+      val ethernet by field(::Ethernet_h)
+      val ip by field(::Ipv4_h)
     }
     struct(::Parsed_packet)
 
@@ -49,8 +49,7 @@ fun main() {
     struct(::OutControl)
 
     val TopPipe by control {
-      val headers_ip by param(::Ipv4_h, INOUT)
-      val headers_ethernet by param(::Ethernet_h, INOUT)
+      val headers by param(::Parsed_packet, INOUT)
       val outCtrl by param(::OutControl, OUT)
 
       val Drop_action by action { assign(outCtrl.outputPort, DROP_PORT) }
@@ -61,12 +60,12 @@ fun main() {
         val ipv4_dest by param(IPv4Address)
         val port by param(PortId)
         assign(nextHop, ipv4_dest)
-        assign(headers_ip.ttl, headers_ip.ttl - lit(1))
+        assign(headers.ip.ttl, headers.ip.ttl - lit(1))
         assign(outCtrl.outputPort, port)
       }
 
       val ipv4_match by table {
-        key(headers_ip.dstAddr, LPM)
+        key(headers.ip.dstAddr, LPM)
         actions(Drop_action, Set_nhop)
         size(1024)
         defaultAction(Drop_action)
@@ -75,14 +74,14 @@ fun main() {
       val Send_to_cpu by action { assign(outCtrl.outputPort, CPU_OUT_PORT) }
 
       val check_ttl by table {
-        key(headers_ip.ttl, EXACT)
+        key(headers.ip.ttl, EXACT)
         actions(Send_to_cpu)
         defaultAction(Send_to_cpu, const_ = true)
       }
 
       val Set_dmac by action {
         val dmac by param(EthernetAddress)
-        assign(headers_ethernet.dstAddr, dmac)
+        assign(headers.ethernet.dstAddr, dmac)
       }
 
       val dmac by table {
@@ -94,7 +93,7 @@ fun main() {
 
       val Set_smac by action {
         val smac by param(EthernetAddress)
-        assign(headers_ethernet.srcAddr, smac)
+        assign(headers.ethernet.srcAddr, smac)
       }
 
       val smac by table {

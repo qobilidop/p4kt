@@ -108,23 +108,6 @@ User code (DSL) → IR (immutable data classes) → Renderer (P4 source text)
 
 ## Future ideas
 
-### Typed field access for nested structs
-
-Cross-type field references (e.g., `Parsed_packet` referencing `Ethernet_h`) still use `typeName("Ethernet_h")` - a raw string. A `TypedFieldDelegate<T>` could enable chained access through real Kotlin properties:
-
-```kotlin
-class Parsed_packet(base: P4Expr) : StructRef(base) {
-  val ethernet by field(::Ethernet_h)  // typed, not typeName("Ethernet_h")
-  val ip by field(::Ipv4_h)
-}
-
-// Enables chained access:
-val pkt by param(::Parsed_packet, INOUT)
-pkt.ip.ttl  // fully typed chain
-```
-
-Status: deferred. The typed `param()` approach covers the most common use case.
-
 ### Architecture as a library
 
 The VSS architecture (`very_simple_model.p4`) should be expressible as a P4kt library - a Kotlin package that provides pre-defined declarations. This validates the design where:

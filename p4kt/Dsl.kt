@@ -178,12 +178,29 @@ class FieldDelegate(
   }
 }
 
+class TypedFieldDelegate<T : StructRef>(
+  private val fields: MutableList<P4Field>,
+  private val expr: P4Expr,
+  private val factory: (P4Expr) -> T,
+) {
+  operator fun provideDelegate(
+    thisRef: Any?,
+    property: kotlin.reflect.KProperty<*>,
+  ): ReadOnlyProperty<Any?, T> {
+    val instance = factory(P4Expr.FieldAccess(expr, property.name))
+    fields.add(P4Field(property.name, P4Type.Named(instance::class.simpleName!!)))
+    return ReadOnlyProperty { _, _ -> instance }
+  }
+}
+
 abstract class StructRef(val expr: P4Expr) {
   val fields = mutableListOf<P4Field>()
 
   fun field(type: P4Type) = FieldDelegate(fields, expr, type)
 
   fun field(type: P4TypeReference) = FieldDelegate(fields, expr, type.typeRef)
+
+  fun <T : StructRef> field(factory: (P4Expr) -> T) = TypedFieldDelegate(fields, expr, factory)
 }
 
 abstract class HeaderRef(expr: P4Expr) : StructRef(expr)

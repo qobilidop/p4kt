@@ -170,6 +170,76 @@ class P4RefTest {
   }
 
   @Test
+  fun typedFieldProducesTypedRef() {
+    class Ipv4_h(base: P4Expr) : HeaderRef(base) {
+      val ttl by field(bit(8))
+    }
+
+    class Parsed_packet(base: P4Expr) : StructRef(base) {
+      val ip by field(::Ipv4_h)
+    }
+
+    val pkt = Parsed_packet(P4Expr.Ref("headers"))
+    // pkt.ip returns Ipv4_h, so pkt.ip.ttl is a real property
+    assertEquals("headers.ip.ttl", pkt.ip.ttl.toP4())
+  }
+
+  @Test
+  fun typedFieldCollectsMetadata() {
+    class Ipv4_h(base: P4Expr) : HeaderRef(base) {
+      val ttl by field(bit(8))
+    }
+
+    class Parsed_packet(base: P4Expr) : StructRef(base) {
+      val ip by field(::Ipv4_h)
+    }
+
+    val pkt = Parsed_packet(P4Expr.Ref(""))
+    assertEquals(listOf(P4Field("ip", P4Type.Named("Ipv4_h"))), pkt.fields)
+  }
+
+  @Test
+  fun typedFieldRegistersCorrectly() {
+    class Ethernet_h(base: P4Expr) : HeaderRef(base) {
+      val dstAddr by field(bit(48))
+    }
+
+    class Ipv4_h(base: P4Expr) : HeaderRef(base) {
+      val ttl by field(bit(8))
+    }
+
+    val program = p4Program {
+      header(::Ethernet_h)
+      header(::Ipv4_h)
+
+      class Parsed_packet(base: P4Expr) : StructRef(base) {
+        val ethernet by field(::Ethernet_h)
+        val ip by field(::Ipv4_h)
+      }
+      struct(::Parsed_packet)
+    }
+
+    assertEquals(
+      """
+          header Ethernet_h {
+              bit<48> dstAddr;
+          }
+
+          header Ipv4_h {
+              bit<8> ttl;
+          }
+
+          struct Parsed_packet {
+              Ethernet_h ethernet;
+              Ipv4_h ip;
+          }
+      """
+        .trimIndent(),
+      program.toP4(),
+    )
+  }
+
+  @Test
   fun headerRegistrationGeneratesIrDeclaration() {
     val program = p4Program {
       class Ipv4_h(base: P4Expr) : HeaderRef(base) {
