@@ -4,6 +4,8 @@ package p4kt
 
 import kotlin.properties.ReadOnlyProperty
 
+@DslMarker annotation class P4DslMarker
+
 // Internal IR types
 
 data class P4Param(val name: String, val type: P4Type, val direction: Direction? = null)
@@ -187,6 +189,7 @@ class StateDeclDelegate(
 
 // Statement builder
 
+@P4DslMarker
 open class StatementBuilder {
   protected val body = mutableListOf<P4Statement>()
 
@@ -253,6 +256,7 @@ class IfBuilder(private val parentBody: MutableList<P4Statement>, private val in
 
 // Declaration builders
 
+@P4DslMarker
 class FieldsBuilder {
   private val fields = mutableListOf<P4Field>()
 
@@ -304,6 +308,7 @@ class FunctionBuilder(private val name: String, private val returnType: P4Type) 
   fun build() = P4Function(name, returnType, params, body)
 }
 
+@P4DslMarker
 class TableBuilder {
   private val keys = mutableListOf<P4KeyEntry>()
   private val actions = mutableListOf<String>()
@@ -342,6 +347,7 @@ class TableBuilder {
   fun build(name: String) = P4Table(name, keys, actions, size, defaultAction, isDefaultActionConst)
 }
 
+@P4DslMarker
 class ExternMethodBuilder {
   private val params = mutableListOf<P4Param>()
 
@@ -352,6 +358,7 @@ class ExternMethodBuilder {
   fun params() = params.toList()
 }
 
+@P4DslMarker
 class ExternBuilder(private val name: String) {
   private val methods = mutableListOf<P4ExternMethod>()
 
@@ -437,6 +444,7 @@ class StateBuilder : StatementBuilder() {
   fun build(name: String) = P4ParserState(name, body)
 }
 
+@P4DslMarker
 class SelectBuilder {
   private val cases = mutableListOf<Pair<P4Expr, String>>()
 
@@ -447,6 +455,7 @@ class SelectBuilder {
   fun cases() = cases.toList()
 }
 
+@P4DslMarker
 class ParserBuilder {
   private val params = mutableListOf<P4Param>()
   private val declarations = mutableListOf<P4Declaration>()
@@ -526,6 +535,7 @@ fun p4Struct(name: String, block: FieldsBuilder.() -> Unit): P4Struct {
 
 // Program builder
 
+@P4DslMarker
 class ProgramBuilder {
   private val declarations = mutableListOf<P4Declaration>()
 

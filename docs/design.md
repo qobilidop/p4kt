@@ -106,12 +106,9 @@ User code (DSL) → IR (immutable data classes) → Renderer (P4 source text)
 - **Typed field access via ref classes**: P4 struct/header types are Kotlin classes extending `StructRef`/`HeaderRef`, registered via `struct(::ClassName)` / `header(::ClassName)`. Field access uses real Kotlin properties, enabling IDE autocomplete and compile-time checking.
 - **Constructor references over reflection**: Factory lambdas (`::ClassName`) are used instead of reflection-based instantiation. Constructor references properly handle variable captures from enclosing scopes, avoiding the need for `kotlin-reflect`.
 - **P4 naming for domain objects**: p4include objects (`core`, `v1model`) and examples (`vss_arch`, `vss_example`) use P4's naming convention (lowercase/snake_case) instead of Kotlin's PascalCase. This follows the precedent set by kotlinx.html and kotlin-css, which break Kotlin naming conventions to match their target domain.
+- **`@P4DslMarker` annotation**: All builder classes used as DSL receivers are annotated with `@P4DslMarker` (a `@DslMarker` annotation). This prevents accidental scope leakage in nested DSL blocks.
 
 ## Future ideas
-
-### @DslMarker annotation
-
-Add a custom `@DslMarker` annotation to prevent accidental scope leakage in nested DSL blocks (e.g., calling `param()` from the wrong nesting level). Every major Kotlin DSL project uses one (kotlinx.html, Ktor, Compose, protobuf-kotlin, etc.).
 
 ### Internal IR visibility
 
