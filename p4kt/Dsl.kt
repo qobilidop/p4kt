@@ -204,7 +204,7 @@ class DeclDelegate<T : P4Declaration>(
 }
 
 class ProgramBuilder {
-  private val declarations = mutableListOf<P4Declaration>()
+  @PublishedApi internal val declarations = mutableListOf<P4Declaration>()
 
   fun typedef(type: P4Type) =
     DeclDelegate<P4Typedef>(
@@ -231,6 +231,18 @@ class ProgramBuilder {
       factory = { name -> p4Action(name, block) },
       register = { declarations.add(it) },
     )
+
+  inline fun <reified T : StructRef> struct() {
+    val dummy = T::class.constructors.first().call(P4Expr.Ref(""))
+    val name = T::class.simpleName!!
+    declarations.add(P4Struct(name, dummy.fields.toList()))
+  }
+
+  inline fun <reified T : HeaderRef> header() {
+    val dummy = T::class.constructors.first().call(P4Expr.Ref(""))
+    val name = T::class.simpleName!!
+    declarations.add(P4Header(name, dummy.fields.toList()))
+  }
 
   fun function(returnType: P4Type, block: FunctionBuilder.() -> Unit) =
     DeclDelegate<P4Function>(

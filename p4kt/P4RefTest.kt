@@ -58,4 +58,46 @@ class P4RefTest {
     val ref = OutControl(P4Expr.Ref(""))
     assertEquals(listOf(P4Field("outputPort", P4Type.Named("PortId"))), ref.fields)
   }
+
+  @Test
+  fun structRegistrationGeneratesIrDeclaration() {
+    val program = p4Program {
+      class OutControl(base: P4Expr) : StructRef(base) {
+        val outputPort by field(bit(4))
+      }
+      struct<OutControl>()
+    }
+
+    assertEquals(
+      """
+          struct OutControl {
+              bit<4> outputPort;
+          }
+      """
+        .trimIndent(),
+      program.toP4(),
+    )
+  }
+
+  @Test
+  fun headerRegistrationGeneratesIrDeclaration() {
+    val program = p4Program {
+      class Ipv4_h(base: P4Expr) : HeaderRef(base) {
+        val ttl by field(bit(8))
+        val srcAddr by field(bit(32))
+      }
+      header<Ipv4_h>()
+    }
+
+    assertEquals(
+      """
+          header Ipv4_h {
+              bit<8> ttl;
+              bit<32> srcAddr;
+          }
+      """
+        .trimIndent(),
+      program.toP4(),
+    )
+  }
 }
