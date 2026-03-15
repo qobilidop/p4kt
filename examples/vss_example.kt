@@ -48,36 +48,74 @@ fun main() {
     }
     struct(::OutControl)
 
-    val Drop_action by action {
-      val outCtrl by param(::OutControl, INOUT)
-      assign(outCtrl.outputPort, DROP_PORT)
-    }
-
-    val Set_nhop by action {
-      val ipv4_dest by param(IPv4Address)
-      val port by param(PortId)
+    val TopPipe by control {
       val headers_ip by param(::Ipv4_h, INOUT)
-      val outCtrl by param(::OutControl, INOUT)
-      assign(ref("nextHop"), ipv4_dest)
-      assign(headers_ip.ttl, headers_ip.ttl - lit(1))
-      assign(outCtrl.outputPort, port)
-    }
-
-    val Send_to_cpu by action {
-      val outCtrl by param(::OutControl, INOUT)
-      assign(outCtrl.outputPort, CPU_OUT_PORT)
-    }
-
-    val Set_dmac by action {
-      val dmac by param(EthernetAddress)
       val headers_ethernet by param(::Ethernet_h, INOUT)
-      assign(headers_ethernet.dstAddr, dmac)
-    }
+      val outCtrl by param(::OutControl, OUT)
 
-    val Set_smac by action {
-      val smac by param(EthernetAddress)
-      val headers_ethernet by param(::Ethernet_h, INOUT)
-      assign(headers_ethernet.srcAddr, smac)
+      val Drop_action by action { assign(outCtrl.outputPort, DROP_PORT) }
+
+      val nextHop by varDecl(IPv4Address)
+
+      val Set_nhop by action {
+        val ipv4_dest by param(IPv4Address)
+        val port by param(PortId)
+        assign(nextHop, ipv4_dest)
+        assign(headers_ip.ttl, headers_ip.ttl - lit(1))
+        assign(outCtrl.outputPort, port)
+      }
+
+      val ipv4_match by table {
+        key(headers_ip.dstAddr, LPM)
+        actions(Drop_action, Set_nhop)
+        size(1024)
+        defaultAction(Drop_action)
+      }
+
+      val Send_to_cpu by action { assign(outCtrl.outputPort, CPU_OUT_PORT) }
+
+      val check_ttl by table {
+        key(headers_ip.ttl, EXACT)
+        actions(Send_to_cpu)
+        defaultAction(Send_to_cpu, const_ = true)
+      }
+
+      val Set_dmac by action {
+        val dmac by param(EthernetAddress)
+        assign(headers_ethernet.dstAddr, dmac)
+      }
+
+      val dmac by table {
+        key(nextHop, EXACT)
+        actions(Drop_action, Set_dmac)
+        size(1024)
+        defaultAction(Drop_action)
+      }
+
+      val Set_smac by action {
+        val smac by param(EthernetAddress)
+        assign(headers_ethernet.srcAddr, smac)
+      }
+
+      val smac by table {
+        key(outCtrl.outputPort, EXACT)
+        actions(Drop_action, Set_smac)
+        size(16)
+        defaultAction(Drop_action)
+      }
+
+      apply {
+        stmt(ipv4_match.apply_())
+        if_(outCtrl.outputPort eq DROP_PORT) { return_() }
+
+        stmt(check_ttl.apply_())
+        if_(outCtrl.outputPort eq CPU_OUT_PORT) { return_() }
+
+        stmt(dmac.apply_())
+        if_(outCtrl.outputPort eq DROP_PORT) { return_() }
+
+        stmt(smac.apply_())
+      }
     }
   }
   println(program.toP4())
