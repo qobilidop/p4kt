@@ -43,20 +43,23 @@ val Ethernet_h by header {
 
 ## Object-based headers for IDE navigation
 
-**Problem:** With the builder pattern, fields are local variables inside a lambda - they go out of scope. When field access expressions are added (e.g., `headers.ip.dstAddr`), the IDE can't navigate from the access to the field definition.
+Superseded by the typed field access design (`docs/milestones/typed-field-access.md`). Struct/header types are now Kotlin classes with `StructRef`/`HeaderRef` base classes, registered via `struct(::ClassName)` / `header(::ClassName)`.
 
-**Idea:** Use Kotlin objects instead of builder lambdas for headers/structs, similar to Kotlin Exposed (SQL DSL):
+## Typed field access for nested structs
+
+**Problem:** Cross-type field references (e.g., `Parsed_packet` referencing `Ethernet_h`) still use `typeName("Ethernet_h")` - a raw string. This happens because `TypedFieldDelegate<T>` for nested struct/header fields is not yet implemented.
+
+**Idea:** Add `inline fun <reified T : StructRef> field()` that returns a `TypedFieldDelegate<T>`, enabling chained access like `headers.ip.ttl` through real Kotlin properties. Constructor references (`::ClassName`) should handle the instantiation, avoiding the reflection capture issue.
 
 ```kotlin
-// Object-based (enables IDE go-to-definition)
-object Ethernet_h : HeaderDef() {
-  val dstAddr = field(typeName("EthernetAddress"))
-  val srcAddr = field(typeName("EthernetAddress"))
-  val etherType = field(bit(16))
+class Parsed_packet(base: P4Expr) : StructRef(base) {
+  val ethernet by field(::Ethernet_h)  // typed, not typeName("Ethernet_h")
+  val ip by field(::Ipv4_h)
 }
 
-// Later, field access:
-Ethernet_h.dstAddr  // IDE can go-to-definition
+// Enables chained access:
+val pkt by param(::Parsed_packet, INOUT)
+pkt.ip.ttl  // fully typed chain
 ```
 
-**Tradeoff:** More verbose, significant departure from the current builder DSL. Revisit when building field access expressions.
+**Status:** Deferred. The typed `param()` approach covers the most common use case.
