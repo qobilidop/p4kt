@@ -8,6 +8,14 @@ This project uses a [devcontainer](https://containers.dev/) for development. All
 - [devcontainer CLI](https://github.com/devcontainers/cli)
 - (Optional) An IDE with devcontainer support, e.g. [VS Code](https://code.visualstudio.com/) with the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 
+## Setup
+
+Install the git pre-commit hook:
+
+```sh
+ln -s ../../tools/pre-commit .git/hooks/pre-commit
+```
+
 ## Commands
 
 The `./dev` script runs commands inside the devcontainer. Omit it if you're already inside.
