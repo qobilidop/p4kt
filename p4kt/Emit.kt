@@ -8,6 +8,9 @@ fun P4Type.toP4(): String =
     is P4Type.Named -> name
     is P4Type.Bool -> "bool"
     is P4Type.Void -> "void"
+    is P4Type.Error -> "error"
+    is P4Type.PacketIn -> "packet_in"
+    is P4Type.PacketOut -> "packet_out"
   }
 
 fun Direction.toP4(): String =
@@ -35,6 +38,11 @@ fun P4Expr.toP4(): String =
       val rightStr = if (right is P4Expr.BinOp) "(${right.toP4()})" else right.toP4()
       "$leftStr ${op.toP4()} $rightStr"
     }
+    is P4Expr.MethodCall -> {
+      val argsStr = args.joinToString(", ") { it.toP4() }
+      "${expr.toP4()}.$method($argsStr)"
+    }
+    is P4Expr.ErrorMember -> "error.$name"
   }
 
 fun BinOpKind.toP4(): String =

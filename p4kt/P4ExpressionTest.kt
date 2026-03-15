@@ -76,4 +76,54 @@ class P4ExpressionTest {
     val ttl = P4Expr.FieldAccess(P4Expr.FieldAccess(headers, "ip"), "ttl")
     assertEquals("headers.ip.ttl - 1", (ttl - lit(1)).toP4())
   }
+
+  // Task 1: Method call expression
+
+  @Test
+  fun methodCallExpression() {
+    val expr = P4Expr.MethodCall(P4Expr.Ref("ck"), "get", emptyList())
+    assertEquals("ck.get()", expr.toP4())
+  }
+
+  @Test
+  fun methodCallExpressionWithArgs() {
+    val expr = P4Expr.MethodCall(P4Expr.Ref("b"), "extract", listOf(P4Expr.Ref("p")))
+    assertEquals("b.extract(p)", expr.toP4())
+  }
+
+  @Test
+  fun methodCallExpressionDsl() {
+    val ck = ref("ck")
+    assertEquals("ck.get()", ck.call("get").toP4())
+  }
+
+  // Task 2: ErrorMember expression
+
+  @Test
+  fun errorMemberExpression() {
+    val expr = P4Expr.ErrorMember("IPv4IncorrectVersion")
+    assertEquals("error.IPv4IncorrectVersion", expr.toP4())
+  }
+
+  @Test
+  fun errorMemberDsl() {
+    assertEquals("error.NoError", error_("NoError").toP4())
+  }
+
+  // Task 3: New types
+
+  @Test
+  fun errorType() {
+    assertEquals("error", P4Type.Error.toP4())
+  }
+
+  @Test
+  fun packetInType() {
+    assertEquals("packet_in", P4Type.PacketIn.toP4())
+  }
+
+  @Test
+  fun packetOutType() {
+    assertEquals("packet_out", P4Type.PacketOut.toP4())
+  }
 }

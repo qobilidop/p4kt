@@ -20,6 +20,9 @@ fun bit(width: Int) = P4Type.Bit(width)
 
 val bool_ = P4Type.Bool
 val void_ = P4Type.Void
+val errorType = P4Type.Error
+val packet_in = P4Type.PacketIn
+val packet_out = P4Type.PacketOut
 
 fun typeName(name: String) = P4Type.Named(name)
 
@@ -40,6 +43,11 @@ operator fun P4Expr.minus(other: P4Expr) = P4Expr.BinOp(BinOpKind.SUB, this, oth
 infix fun P4Expr.eq(other: P4Expr) = P4Expr.BinOp(BinOpKind.EQ, this, other)
 
 infix fun P4Expr.ne(other: P4Expr) = P4Expr.BinOp(BinOpKind.NE, this, other)
+
+fun P4Expr.call(method: String, vararg args: P4Expr) =
+  P4Expr.MethodCall(this, method, args.toList())
+
+fun error_(name: String) = P4Expr.ErrorMember(name)
 
 // Statement builder
 

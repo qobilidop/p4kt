@@ -8,6 +8,12 @@ sealed class P4Type {
   data object Bool : P4Type()
 
   data object Void : P4Type()
+
+  data object Error : P4Type()
+
+  data object PacketIn : P4Type()
+
+  data object PacketOut : P4Type()
 }
 
 enum class Direction {
@@ -28,6 +34,10 @@ sealed class P4Expr {
   data class FieldAccess(val expr: P4Expr, val field: String) : P4Expr()
 
   data class BinOp(val op: BinOpKind, val left: P4Expr, val right: P4Expr) : P4Expr()
+
+  data class MethodCall(val expr: P4Expr, val method: String, val args: List<P4Expr>) : P4Expr()
+
+  data class ErrorMember(val name: String) : P4Expr()
 }
 
 enum class BinOpKind {
