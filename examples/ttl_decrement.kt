@@ -1,5 +1,3 @@
-@file:JvmName("TtlDecrementKt")
-
 package p4kt.examples
 
 import p4kt.*

@@ -1,5 +1,3 @@
-@file:JvmName("VssTypesKt")
-
 package p4kt.examples
 
 import p4kt.*

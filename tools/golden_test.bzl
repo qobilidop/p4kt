@@ -9,7 +9,9 @@ def golden_test(name):
     Args:
         name: Base name of the example. Expects {name}.kt and {name}.p4 files.
     """
-    main_class = "p4kt.examples." + name.title().replace("_", "") + "Kt"
+
+    # Kotlin's default class name: capitalize first letter, keep rest as-is, append "Kt"
+    main_class = "p4kt.examples." + name[0].upper() + name[1:] + "Kt"
 
     kt_jvm_binary(
         name = name + "_bin",
