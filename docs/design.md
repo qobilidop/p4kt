@@ -90,11 +90,11 @@ User code (DSL) → IR (immutable data classes) → Renderer (P4 source text)
 
 | Construct            | Example from VSS                       | Status |
 | -------------------- | -------------------------------------- | ------ |
-| key with match kind  | `headers.ip.dstAddr : lpm`             | Todo   |
-| actions list         | `actions = { Drop_action; Set_nhop; }` | Todo   |
-| size                 | `size = 1024`                          | Todo   |
-| default_action       | `default_action = Drop_action`         | Todo   |
-| const default_action | `const default_action = NoAction`      | Todo   |
+| key with match kind  | `headers.ip.dstAddr : lpm`             | Done   |
+| actions list         | `actions = { Drop_action; Set_nhop; }` | Done   |
+| size                 | `size = 1024`                          | Done   |
+| default_action       | `default_action = Drop_action`         | Done   |
+| const default_action | `const default_action = NoAction`      | Done   |
 
 ## Design decisions
 
