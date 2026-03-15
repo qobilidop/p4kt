@@ -9,10 +9,6 @@ fun main() {
   val program = p4Program {
     val EthernetAddress by typedef(bit(48))
     val IPv4Address by typedef(bit(32))
-    val PortId by typedef(bit(4))
-
-    val DROP_PORT by const_(PortId, lit(4, 0xF))
-    val CPU_OUT_PORT by const_(PortId, lit(4, 0xE))
 
     class Ethernet_h(base: P4Expr) : HeaderRef(base) {
       val dstAddr by field(EthernetAddress)
@@ -43,33 +39,13 @@ fun main() {
     }
     struct(::Parsed_packet)
 
-    class InControl(base: P4Expr) : StructRef(base) {
-      val inputPort by field(PortId)
-    }
-    struct(::InControl)
-
-    class OutControl(base: P4Expr) : StructRef(base) {
-      val outputPort by field(PortId)
-    }
-    struct(::OutControl)
-
-    @Suppress("UnusedPrivateProperty")
-    val Ck16 by extern {
-      constructor_()
-      method("clear", void_)
-      method("update", void_) {
-        val data by param(typeName("T"), IN)
-      }
-      method("get", bit(16))
-    }
-
     errors("IPv4OptionsNotSupported", "IPv4IncorrectVersion", "IPv4ChecksumError")
 
     @Suppress("UnusedPrivateProperty")
     val TopParser by parser {
       val b by param(packet_in)
       val p by param(::Parsed_packet, OUT)
-      val ck by externInstance(Ck16)
+      val ck by externInstance(vss_arch.Ck16)
 
       val parse_ipv4 by state {
         call(b, "extract", p.ip)
@@ -91,16 +67,16 @@ fun main() {
     val TopPipe by control {
       val headers by param(::Parsed_packet, INOUT)
       val parseError by param(errorType, IN)
-      val inCtrl by param(::InControl, IN)
-      val outCtrl by param(::OutControl, OUT)
+      val inCtrl by param(vss_arch::InControl, IN)
+      val outCtrl by param(vss_arch::OutControl, OUT)
 
-      val Drop_action by action { assign(outCtrl.outputPort, DROP_PORT) }
+      val Drop_action by action { assign(outCtrl.outputPort, vss_arch.DROP_PORT.ref) }
 
       val nextHop by varDecl(IPv4Address)
 
       val Set_nhop by action {
         val ipv4_dest by param(IPv4Address)
-        val port by param(PortId)
+        val port by param(vss_arch.PortId)
         assign(nextHop, ipv4_dest)
         assign(headers.ip.ttl, headers.ip.ttl - lit(1))
         assign(outCtrl.outputPort, port)
@@ -113,7 +89,7 @@ fun main() {
         defaultAction(Drop_action)
       }
 
-      val Send_to_cpu by action { assign(outCtrl.outputPort, CPU_OUT_PORT) }
+      val Send_to_cpu by action { assign(outCtrl.outputPort, vss_arch.CPU_OUT_PORT.ref) }
 
       val check_ttl by table {
         key(headers.ip.ttl, EXACT)
@@ -153,13 +129,13 @@ fun main() {
         }
 
         ipv4_match.apply_()
-        if_(outCtrl.outputPort eq DROP_PORT) { return_() }
+        if_(outCtrl.outputPort eq vss_arch.DROP_PORT.ref) { return_() }
 
         check_ttl.apply_()
-        if_(outCtrl.outputPort eq CPU_OUT_PORT) { return_() }
+        if_(outCtrl.outputPort eq vss_arch.CPU_OUT_PORT.ref) { return_() }
 
         dmac.apply_()
-        if_(outCtrl.outputPort eq DROP_PORT) { return_() }
+        if_(outCtrl.outputPort eq vss_arch.DROP_PORT.ref) { return_() }
 
         smac.apply_()
       }
@@ -169,7 +145,7 @@ fun main() {
     val TopDeparser by control {
       val p by param(::Parsed_packet, INOUT)
       val b by param(packet_out)
-      val ck by externInstance(Ck16)
+      val ck by externInstance(vss_arch.Ck16)
 
       apply {
         call(b, "emit", p.ethernet)

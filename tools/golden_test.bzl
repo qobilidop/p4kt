@@ -3,11 +3,12 @@
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary")
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
 
-def golden_test(name):
+def golden_test(name, extra_srcs = []):
     """Creates a golden test that runs a P4kt example and compares output.
 
     Args:
         name: Base name of the example. Expects {name}.kt and {name}.p4 files.
+        extra_srcs: Additional source files to include in the binary.
     """
 
     # Kotlin's default class name: capitalize first letter, keep rest as-is, append "Kt"
@@ -15,7 +16,7 @@ def golden_test(name):
 
     kt_jvm_binary(
         name = name + "_bin",
-        srcs = [name + ".kt"],
+        srcs = [name + ".kt"] + extra_srcs,
         main_class = main_class,
         deps = ["//p4kt"],
     )

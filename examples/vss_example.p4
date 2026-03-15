@@ -2,12 +2,6 @@ typedef bit<48> EthernetAddress;
 
 typedef bit<32> IPv4Address;
 
-typedef bit<4> PortId;
-
-const PortId DROP_PORT = 4w15;
-
-const PortId CPU_OUT_PORT = 4w14;
-
 header Ethernet_h {
     EthernetAddress dstAddr;
     EthernetAddress srcAddr;
@@ -32,21 +26,6 @@ header Ipv4_h {
 struct Parsed_packet {
     Ethernet_h ethernet;
     Ipv4_h ip;
-}
-
-struct InControl {
-    PortId inputPort;
-}
-
-struct OutControl {
-    PortId outputPort;
-}
-
-extern Ck16 {
-    Ck16();
-    void clear();
-    void update(in T data);
-    bit<16> get();
 }
 
 error {

@@ -2,4 +2,7 @@ load("//tools:golden_test.bzl", "golden_test")
 
 golden_test(name = "vss_arch")
 
-golden_test(name = "vss_example")
+golden_test(
+    name = "vss_example",
+    extra_srcs = ["vss_arch.kt"],
+)

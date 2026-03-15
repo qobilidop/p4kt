@@ -102,7 +102,10 @@ data class P4Function(
   val body: List<P4Statement>,
 ) : P4Declaration
 
-data class P4Const(val name: String, val type: P4Type, val value: P4Expr) : P4Declaration
+data class P4Const(val name: String, val type: P4Type, val value: P4Expr) : P4Declaration {
+  val ref
+    get() = P4Expr.Ref(name)
+}
 
 data class P4Action(val name: String, val params: List<P4Param>, val body: List<P4Statement>) :
   P4Declaration

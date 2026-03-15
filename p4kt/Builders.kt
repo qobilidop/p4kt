@@ -402,6 +402,10 @@ fun p4Struct(name: String, block: FieldsBuilder.() -> Unit): P4Struct {
 class ProgramBuilder {
   private val declarations = mutableListOf<P4Declaration>()
 
+  fun declare(declaration: P4Declaration) {
+    declarations.add(declaration)
+  }
+
   fun typedef(type: P4Type) =
     DeclDelegate<P4Typedef>(
       factory = { name -> p4Typedef(name, type) },
@@ -482,6 +486,42 @@ class ProgramBuilder {
   }
 
   fun build() = P4Program(declarations.toList())
+}
+
+abstract class P4Library {
+  private val declarations = mutableListOf<P4Declaration>()
+
+  protected fun typedef(name: String, type: P4Type): P4Typedef {
+    val td = p4Typedef(name, type)
+    declarations.add(td)
+    return td
+  }
+
+  protected fun const_(name: String, type: P4Type, value: P4Expr): P4Const {
+    val c = p4Const(name, type, value)
+    declarations.add(c)
+    return c
+  }
+
+  protected fun <T : StructRef> struct(factory: (P4Expr) -> T) {
+    val dummy = factory(P4Expr.Ref(""))
+    declarations.add(P4Struct(dummy::class.simpleName!!, dummy.fields.toList()))
+  }
+
+  protected fun <T : HeaderRef> header(factory: (P4Expr) -> T) {
+    val dummy = factory(P4Expr.Ref(""))
+    declarations.add(P4Header(dummy::class.simpleName!!, dummy.fields.toList()))
+  }
+
+  protected fun extern(name: String, block: ExternBuilder.() -> Unit): P4Extern {
+    val builder = ExternBuilder(name)
+    builder.block()
+    val ext = builder.build()
+    declarations.add(ext)
+    return ext
+  }
+
+  fun toP4() = P4Program(declarations).toP4()
 }
 
 fun p4Program(block: ProgramBuilder.() -> Unit): P4Program {
