@@ -46,8 +46,8 @@ User code (DSL) → IR (immutable data classes) → Renderer (P4 source text)
 | function              | `function bit<8> max(...)`                                | Done   |
 | const                 | `const PortId DROP_PORT = 0xF`                            | Done   |
 | action                | `action Set_nhop(...) { ... }`                            | Done   |
-| table                 | `table ipv4_match { key, actions, size, default_action }` | Todo   |
-| control               | `control TopPipe(...) { ... apply { ... } }`              | Todo   |
+| table                 | `table ipv4_match { key, actions, size, default_action }` | Done   |
+| control               | `control TopPipe(...) { ... apply { ... } }`              | Done   |
 | parser                | `parser TopParser(...) { state start { ... } }`           | Todo   |
 | extern declaration    | `extern Ck16 { void clear(); ... }`                       | Todo   |
 | extern instantiation  | `Ck16() ck;`                                              | Todo   |
@@ -73,7 +73,7 @@ User code (DSL) → IR (immutable data classes) → Renderer (P4 source text)
 | if/else               | `if (parseError != ...) { ... }`                                   | Done   |
 | return                | `return;`                                                          | Done   |
 | variable declaration  | `bit<8> tmp = x`                                                   | Done   |
-| method call statement | `ipv4_match.apply()`                                               | Todo   |
+| method call statement | `ipv4_match.apply()`                                               | Done   |
 | transition            | `transition select(...) { ... }`                                   | Todo   |
 | transition select     | `transition select(p.ethernet.etherType) { 0x0800 : parse_ipv4; }` | Todo   |
 
