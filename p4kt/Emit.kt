@@ -75,6 +75,12 @@ fun P4Statement.toP4(): String =
         "if (${condition.toP4()}) {\n$thenStr\n} else {\n$elseStr\n}"
       }
     }
+    is P4Statement.Verify -> "verify(${condition.toP4()}, ${error.toP4()});"
+    is P4Statement.Transition -> "transition $stateName;"
+    is P4Statement.TransitionSelect -> {
+      val casesStr = cases.joinToString("\n") { (expr, state) -> "    ${expr.toP4()} : $state;" }
+      "transition select(${expr.toP4()}) {\n$casesStr\n}"
+    }
   }
 
 fun indentBlock(statements: List<P4Statement>, indent: String): String =

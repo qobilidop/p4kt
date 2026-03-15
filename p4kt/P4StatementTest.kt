@@ -111,6 +111,58 @@ class P4StatementTest {
   }
 
   @Test
+  fun verifyStatement() {
+    val stmt =
+      P4Statement.Verify(
+        P4Expr.BinOp(BinOpKind.EQ, P4Expr.Ref("version"), P4Expr.TypedLit(4, 4)),
+        P4Expr.ErrorMember("IPv4IncorrectVersion"),
+      )
+    assertEquals("verify(version == 4w4, error.IPv4IncorrectVersion);", stmt.toP4())
+  }
+
+  @Test
+  fun transitionStatement() {
+    val stmt = P4Statement.Transition("accept")
+    assertEquals("transition accept;", stmt.toP4())
+  }
+
+  @Test
+  fun transitionSelectStatement() {
+    val stmt =
+      P4Statement.TransitionSelect(
+        P4Expr.FieldAccess(P4Expr.Ref("p"), "etherType"),
+        listOf(P4Expr.TypedLit(16, 0x0800) to "parse_ipv4"),
+      )
+    assertEquals(
+      """
+            transition select(p.etherType) {
+                16w2048 : parse_ipv4;
+            }
+      """
+        .trimIndent(),
+      stmt.toP4(),
+    )
+  }
+
+  @Test
+  fun verifyDsl() {
+    val fn =
+      p4Function("test", void_) {
+        val x by param(bit(4), IN)
+        verify(x eq lit(4, 4), error_("BadVersion"))
+      }
+    assertEquals(
+      """
+            function void test(in bit<4> x) {
+                verify(x == 4w4, error.BadVersion);
+            }
+      """
+        .trimIndent(),
+      fn.toP4(),
+    )
+  }
+
+  @Test
   fun nestedIfInFunction() {
     val fn =
       p4Function("test", void_) {

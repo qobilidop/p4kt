@@ -61,6 +61,13 @@ sealed class P4Statement {
     val thenBody: List<P4Statement>,
     val elseBody: List<P4Statement>,
   ) : P4Statement()
+
+  data class Verify(val condition: P4Expr, val error: P4Expr) : P4Statement()
+
+  data class Transition(val stateName: String) : P4Statement()
+
+  data class TransitionSelect(val expr: P4Expr, val cases: List<Pair<P4Expr, String>>) :
+    P4Statement()
 }
 
 data class P4Field(val name: String, val type: P4Type)

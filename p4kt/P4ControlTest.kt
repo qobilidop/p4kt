@@ -116,6 +116,34 @@ class P4ControlTest {
   }
 
   @Test
+  fun callDslStatement() {
+    val action = p4Action("test") { call(P4Expr.Ref("ck"), "clear") }
+    assertEquals(
+      """
+          action test() {
+              ck.clear();
+          }
+      """
+        .trimIndent(),
+      action.toP4(),
+    )
+  }
+
+  @Test
+  fun callDslStatementWithArgs() {
+    val action = p4Action("test") { call(P4Expr.Ref("b"), "extract", P4Expr.Ref("p")) }
+    assertEquals(
+      """
+          action test() {
+              b.extract(p);
+          }
+      """
+        .trimIndent(),
+      action.toP4(),
+    )
+  }
+
+  @Test
   fun methodCallStatement() {
     val stmt = P4Statement.MethodCall(P4Expr.Ref("ipv4_match"), "apply", emptyList())
     assertEquals("ipv4_match.apply();", stmt.toP4())

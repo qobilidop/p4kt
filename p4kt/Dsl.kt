@@ -79,6 +79,14 @@ open class StatementBuilder {
     body.add(statement)
   }
 
+  fun call(expr: P4Expr, method: String, vararg args: P4Expr) {
+    body.add(P4Statement.MethodCall(expr, method, args.toList()))
+  }
+
+  fun verify(condition: P4Expr, error: P4Expr) {
+    body.add(P4Statement.Verify(condition, error))
+  }
+
   fun P4TableRef.apply_() {
     body.add(P4Statement.MethodCall(P4Expr.Ref(name), "apply", emptyList()))
   }
