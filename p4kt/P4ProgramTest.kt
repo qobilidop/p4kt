@@ -7,18 +7,18 @@ class P4ProgramTest {
   @Test
   fun programWithMultipleDeclarations() {
     val program = p4Program {
-      @Suppress("UNUSED_VARIABLE") val EthernetAddress by typedef(bit(48))
+      val EthernetAddress by typedef(bit(48))
 
       class Ethernet_h(base: P4Expr) : HeaderRef(base) {
-        val dstAddr by field(typeName("EthernetAddress"))
+        val dstAddr by field(EthernetAddress)
         val etherType by field(bit(16))
       }
-      header<Ethernet_h>()
+      header(::Ethernet_h)
 
       class Parsed_packet(base: P4Expr) : StructRef(base) {
         val ethernet by field(typeName("Ethernet_h"))
       }
-      struct<Parsed_packet>()
+      struct(::Parsed_packet)
     }
 
     assertEquals(

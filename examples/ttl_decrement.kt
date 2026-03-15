@@ -7,11 +7,11 @@ fun main() {
     class Ipv4_h(base: P4Expr) : HeaderRef(base) {
       val ttl by field(bit(8))
     }
-    header<Ipv4_h>()
+    header(::Ipv4_h)
 
     val headers by
       function(void_) {
-        val ip by param<Ipv4_h>(INOUT)
+        val ip by param(::Ipv4_h, INOUT)
         assign(ip.ttl, ip.ttl - lit(1))
       }
   }

@@ -4,15 +4,15 @@ import p4kt.*
 
 fun main() {
   val program = p4Program {
-    @Suppress("UNUSED_VARIABLE") val EthernetAddress by typedef(bit(48))
-    @Suppress("UNUSED_VARIABLE") val IPv4Address by typedef(bit(32))
+    val EthernetAddress by typedef(bit(48))
+    val IPv4Address by typedef(bit(32))
 
     class Ethernet_h(base: P4Expr) : HeaderRef(base) {
-      val dstAddr by field(typeName("EthernetAddress"))
-      val srcAddr by field(typeName("EthernetAddress"))
+      val dstAddr by field(EthernetAddress)
+      val srcAddr by field(EthernetAddress)
       val etherType by field(bit(16))
     }
-    header<Ethernet_h>()
+    header(::Ethernet_h)
 
     class Ipv4_h(base: P4Expr) : HeaderRef(base) {
       val version by field(bit(4))
@@ -25,16 +25,16 @@ fun main() {
       val ttl by field(bit(8))
       val protocol by field(bit(8))
       val hdrChecksum by field(bit(16))
-      val srcAddr by field(typeName("IPv4Address"))
-      val dstAddr by field(typeName("IPv4Address"))
+      val srcAddr by field(IPv4Address)
+      val dstAddr by field(IPv4Address)
     }
-    header<Ipv4_h>()
+    header(::Ipv4_h)
 
     class Parsed_packet(base: P4Expr) : StructRef(base) {
       val ethernet by field(typeName("Ethernet_h"))
       val ip by field(typeName("Ipv4_h"))
     }
-    struct<Parsed_packet>()
+    struct(::Parsed_packet)
   }
   println(program.toP4())
 }

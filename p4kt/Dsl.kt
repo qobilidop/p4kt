@@ -1,12 +1,6 @@
 package p4kt
 
 import kotlin.properties.ReadOnlyProperty
-import kotlin.reflect.KClass
-
-@PublishedApi
-internal fun <T : StructRef> createStructRef(clazz: KClass<T>, base: P4Expr): T {
-  return clazz.constructors.first().call(base)
-}
 
 val IN = Direction.IN
 val OUT = Direction.OUT
@@ -81,32 +75,32 @@ class IfBuilder(private val parentBody: MutableList<P4Statement>, private val in
 
 class TypedParamDelegate<T : StructRef>(
   private val params: MutableList<P4Param>,
-  private val clazz: kotlin.reflect.KClass<T>,
+  private val factory: (P4Expr) -> T,
   private val direction: Direction? = null,
 ) {
   operator fun provideDelegate(
     thisRef: Any?,
     property: kotlin.reflect.KProperty<*>,
   ): ReadOnlyProperty<Any?, T> {
-    params.add(P4Param(property.name, P4Type.Named(clazz.simpleName!!), direction))
-    val instance = createStructRef(clazz, P4Expr.Ref(property.name))
+    val instance = factory(P4Expr.Ref(property.name))
+    params.add(P4Param(property.name, P4Type.Named(instance::class.simpleName!!), direction))
     return ReadOnlyProperty { _, _ -> instance }
   }
 }
 
 class FunctionBuilder(private val name: String, private val returnType: P4Type) :
   StatementBuilder() {
-  @PublishedApi internal val params = mutableListOf<P4Param>()
+  private val params = mutableListOf<P4Param>()
 
   fun param(type: P4Type, direction: Direction) = ParamDelegate(params, type, direction)
 
   fun param(type: P4TypeReference, direction: Direction) =
     ParamDelegate(params, type.typeRef, direction)
 
-  inline fun <reified T : StructRef> param() = TypedParamDelegate(params, T::class)
+  fun <T : StructRef> param(factory: (P4Expr) -> T) = TypedParamDelegate(params, factory)
 
-  inline fun <reified T : StructRef> param(direction: Direction) =
-    TypedParamDelegate(params, T::class, direction)
+  fun <T : StructRef> param(factory: (P4Expr) -> T, direction: Direction) =
+    TypedParamDelegate(params, factory, direction)
 
   fun build() = P4Function(name, returnType, params, body)
 }
@@ -197,7 +191,7 @@ class ParamDelegate(
 }
 
 class ActionBuilder : StatementBuilder() {
-  @PublishedApi internal val params = mutableListOf<P4Param>()
+  private val params = mutableListOf<P4Param>()
 
   fun param(type: P4Type) = ParamDelegate(params, type)
 
@@ -208,10 +202,10 @@ class ActionBuilder : StatementBuilder() {
   fun param(type: P4TypeReference, direction: Direction) =
     ParamDelegate(params, type.typeRef, direction)
 
-  inline fun <reified T : StructRef> param() = TypedParamDelegate(params, T::class)
+  fun <T : StructRef> param(factory: (P4Expr) -> T) = TypedParamDelegate(params, factory)
 
-  inline fun <reified T : StructRef> param(direction: Direction) =
-    TypedParamDelegate(params, T::class, direction)
+  fun <T : StructRef> param(factory: (P4Expr) -> T, direction: Direction) =
+    TypedParamDelegate(params, factory, direction)
 
   fun build(name: String) = P4Action(name, params, body)
 }
@@ -243,7 +237,7 @@ class DeclDelegate<T : P4Declaration>(
 }
 
 class ProgramBuilder {
-  @PublishedApi internal val declarations = mutableListOf<P4Declaration>()
+  private val declarations = mutableListOf<P4Declaration>()
 
   fun typedef(type: P4Type) =
     DeclDelegate<P4Typedef>(
@@ -274,16 +268,14 @@ class ProgramBuilder {
       register = { declarations.add(it) },
     )
 
-  inline fun <reified T : StructRef> struct() {
-    val dummy = createStructRef(T::class, P4Expr.Ref(""))
-    val name = T::class.simpleName!!
-    declarations.add(P4Struct(name, dummy.fields.toList()))
+  fun <T : StructRef> struct(factory: (P4Expr) -> T) {
+    val dummy = factory(P4Expr.Ref(""))
+    declarations.add(P4Struct(dummy::class.simpleName!!, dummy.fields.toList()))
   }
 
-  inline fun <reified T : HeaderRef> header() {
-    val dummy = createStructRef(T::class, P4Expr.Ref(""))
-    val name = T::class.simpleName!!
-    declarations.add(P4Header(name, dummy.fields.toList()))
+  fun <T : HeaderRef> header(factory: (P4Expr) -> T) {
+    val dummy = factory(P4Expr.Ref(""))
+    declarations.add(P4Header(dummy::class.simpleName!!, dummy.fields.toList()))
   }
 
   fun function(returnType: P4Type, block: FunctionBuilder.() -> Unit) =

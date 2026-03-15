@@ -65,7 +65,7 @@ class P4RefTest {
       class OutControl(base: P4Expr) : StructRef(base) {
         val outputPort by field(bit(4))
       }
-      struct<OutControl>()
+      struct(::OutControl)
     }
 
     assertEquals(
@@ -87,7 +87,7 @@ class P4RefTest {
 
     val a =
       p4Action("Drop") {
-        val outCtrl by param<OutControl>(INOUT)
+        val outCtrl by param(::OutControl, INOUT)
         assign(outCtrl.outputPort, lit(4, 0xF))
       }
 
@@ -156,7 +156,7 @@ class P4RefTest {
         val ttl by field(bit(8))
         val srcAddr by field(bit(32))
       }
-      header<Ipv4_h>()
+      header(::Ipv4_h)
     }
 
     assertEquals(
