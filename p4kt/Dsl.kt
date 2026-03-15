@@ -6,6 +6,10 @@ val IN = Direction.IN
 val OUT = Direction.OUT
 val INOUT = Direction.INOUT
 
+val LPM = MatchKind.LPM
+val EXACT = MatchKind.EXACT
+val TERNARY = MatchKind.TERNARY
+
 fun bit(width: Int) = P4Type.Bit(width)
 
 val bool_ = P4Type.Bool
@@ -49,6 +53,10 @@ open class StatementBuilder {
 
   fun return_() {
     body.add(P4Statement.Return(null))
+  }
+
+  fun stmt(statement: P4Statement) {
+    body.add(statement)
   }
 
   fun statements() = body.toList()
@@ -220,6 +228,119 @@ fun p4Action(name: String, block: ActionBuilder.() -> Unit): P4Action {
   return builder.build(name)
 }
 
+class P4TableRef(val name: String) {
+  fun apply_(): P4Statement.MethodCall =
+    P4Statement.MethodCall(P4Expr.Ref(name), "apply", emptyList())
+}
+
+class TableBuilder {
+  private val keys = mutableListOf<P4KeyEntry>()
+  private val actions = mutableListOf<String>()
+  private var size: Int? = null
+  private var defaultAction: String = ""
+  private var isDefaultActionConst: Boolean = false
+
+  fun key(expr: P4Expr, matchKind: MatchKind) {
+    keys.add(P4KeyEntry(expr, matchKind))
+  }
+
+  fun actions(vararg actionRefs: P4Action) {
+    actions.addAll(actionRefs.map { it.name })
+  }
+
+  fun size(size: Int) {
+    this.size = size
+  }
+
+  fun defaultAction(action: P4Action, const_: Boolean = false) {
+    defaultAction = action.name
+    isDefaultActionConst = const_
+  }
+
+  fun build(name: String) = P4Table(name, keys, actions, size, defaultAction, isDefaultActionConst)
+}
+
+fun p4Table(name: String, block: TableBuilder.() -> Unit): P4Table {
+  val builder = TableBuilder()
+  builder.block()
+  return builder.build(name)
+}
+
+class ControlVarDeclDelegate(
+  private val declarations: MutableList<P4Declaration>,
+  private val type: P4Type,
+) {
+  operator fun provideDelegate(
+    thisRef: Any?,
+    property: kotlin.reflect.KProperty<*>,
+  ): ReadOnlyProperty<Any?, P4Expr.Ref> {
+    declarations.add(P4LocalVar(property.name, type))
+    return ReadOnlyProperty { _, _ -> P4Expr.Ref(property.name) }
+  }
+}
+
+class TableDeclDelegate(
+  private val factory: (String) -> P4Table,
+  private val register: (P4Table) -> Unit,
+) {
+  operator fun provideDelegate(
+    thisRef: Any?,
+    property: kotlin.reflect.KProperty<*>,
+  ): ReadOnlyProperty<Any?, P4TableRef> {
+    val table = factory(property.name)
+    register(table)
+    return ReadOnlyProperty { _, _ -> P4TableRef(property.name) }
+  }
+}
+
+class ControlBuilder : StatementBuilder() {
+  private val params = mutableListOf<P4Param>()
+  private val declarations = mutableListOf<P4Declaration>()
+
+  fun param(type: P4Type, direction: Direction) = ParamDelegate(params, type, direction)
+
+  fun param(type: P4TypeReference, direction: Direction) =
+    ParamDelegate(params, type.typeRef, direction)
+
+  fun <T : StructRef> param(factory: (P4Expr) -> T, direction: Direction) =
+    TypedParamDelegate(params, factory, direction)
+
+  fun action(block: ActionBuilder.() -> Unit) =
+    DeclDelegate<P4Action>(
+      factory = { name -> p4Action(name, block) },
+      register = { declarations.add(it) },
+    )
+
+  fun varDecl(type: P4Type): ControlVarDeclDelegate = ControlVarDeclDelegate(declarations, type)
+
+  fun varDecl(type: P4TypeReference): ControlVarDeclDelegate =
+    ControlVarDeclDelegate(declarations, type.typeRef)
+
+  fun table(block: TableBuilder.() -> Unit) =
+    TableDeclDelegate(
+      factory = { name ->
+        val builder = TableBuilder()
+        builder.block()
+        builder.build(name)
+      },
+      register = { declarations.add(it) },
+    )
+
+  fun apply(block: StatementBuilder.() -> Unit) {
+    val applyBuilder = StatementBuilder()
+    applyBuilder.block()
+    body.addAll(applyBuilder.statements())
+  }
+
+  fun build(name: String) = P4Control(name, params, declarations, body)
+}
+
+fun p4Control(name: String, block: ControlBuilder.() -> Unit): P4Control {
+  val builder = ControlBuilder()
+  builder.block()
+  return builder.build(name)
+}
+
 fun p4Function(name: String, returnType: P4Type, block: FunctionBuilder.() -> Unit): P4Function {
   val builder = FunctionBuilder(name, returnType)
   builder.block()
@@ -281,6 +402,12 @@ class ProgramBuilder {
     val dummy = factory(P4Expr.Ref(""))
     declarations.add(P4Header(dummy::class.simpleName!!, dummy.fields.toList()))
   }
+
+  fun control(block: ControlBuilder.() -> Unit) =
+    DeclDelegate<P4Control>(
+      factory = { name -> p4Control(name, block) },
+      register = { declarations.add(it) },
+    )
 
   fun function(returnType: P4Type, block: FunctionBuilder.() -> Unit) =
     DeclDelegate<P4Function>(
