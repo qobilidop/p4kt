@@ -103,6 +103,53 @@ class P4RefTest {
   }
 
   @Test
+  fun paramAcceptsTypeReference() {
+    val PortId = P4Typedef("PortId", bit(4))
+
+    val a =
+      p4Action("Set") {
+        val port by param(PortId)
+        assign(ref("outPort"), port)
+      }
+
+    assertEquals(
+      """
+          action Set(PortId port) {
+              outPort = port;
+          }
+      """
+        .trimIndent(),
+      a.toP4(),
+    )
+  }
+
+  @Test
+  fun paramAcceptsTypeReferenceWithDirection() {
+    val PortId = P4Typedef("PortId", bit(4))
+
+    val a =
+      p4Action("Set") {
+        val port by param(PortId, IN)
+        assign(ref("outPort"), port)
+      }
+
+    assertEquals(
+      """
+          action Set(in PortId port) {
+              outPort = port;
+          }
+      """
+        .trimIndent(),
+      a.toP4(),
+    )
+  }
+
+  @Test
+  fun refConvenienceFunction() {
+    assertEquals("foo", ref("foo").toP4())
+  }
+
+  @Test
   fun headerRegistrationGeneratesIrDeclaration() {
     val program = p4Program {
       class Ipv4_h(base: P4Expr) : HeaderRef(base) {

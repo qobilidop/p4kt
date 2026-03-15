@@ -11,6 +11,8 @@ fun bit(width: Int) = P4Type.Bit(width)
 val bool_ = P4Type.Bool
 val void_ = P4Type.Void
 
+fun ref(name: String) = P4Expr.Ref(name)
+
 fun lit(value: Long) = P4Expr.Lit(value)
 
 fun lit(value: Int) = P4Expr.Lit(value.toLong())
@@ -93,6 +95,9 @@ class FunctionBuilder(private val name: String, private val returnType: P4Type) 
   @PublishedApi internal val params = mutableListOf<P4Param>()
 
   fun param(type: P4Type, direction: Direction) = ParamDelegate(params, type, direction)
+
+  fun param(type: P4TypeReference, direction: Direction) =
+    ParamDelegate(params, type.typeRef, direction)
 
   inline fun <reified T : StructRef> param() = TypedParamDelegate(params, T::class)
 
@@ -194,6 +199,11 @@ class ActionBuilder : StatementBuilder() {
 
   fun param(type: P4Type, direction: Direction) = ParamDelegate(params, type, direction)
 
+  fun param(type: P4TypeReference) = ParamDelegate(params, type.typeRef)
+
+  fun param(type: P4TypeReference, direction: Direction) =
+    ParamDelegate(params, type.typeRef, direction)
+
   inline fun <reified T : StructRef> param() = TypedParamDelegate(params, T::class)
 
   inline fun <reified T : StructRef> param(direction: Direction) =
@@ -250,6 +260,9 @@ class ProgramBuilder {
     )
 
   fun const_(type: P4Type, value: P4Expr) = ConstDelegate(type, value) { declarations.add(it) }
+
+  fun const_(type: P4TypeReference, value: P4Expr) =
+    ConstDelegate(type.typeRef, value) { declarations.add(it) }
 
   fun action(block: ActionBuilder.() -> Unit) =
     DeclDelegate<P4Action>(
