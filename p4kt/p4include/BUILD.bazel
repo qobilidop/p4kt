@@ -1,12 +1,19 @@
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary", "kt_jvm_library", "kt_jvm_test")
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
 
+# Library
+
 kt_jvm_library(
     name = "p4include",
-    srcs = ["Core.kt"],
+    srcs = [
+        "Core.kt",
+        "V1model.kt",
+    ],
     visibility = ["//visibility:public"],
     deps = ["//p4kt"],
 )
+
+# Core
 
 kt_jvm_binary(
     name = "core_bin",
@@ -32,6 +39,42 @@ kt_jvm_test(
     name = "CoreTest",
     srcs = ["CoreTest.kt"],
     test_class = "p4kt.p4include.CoreTest",
+    deps = [
+        ":p4include",
+        "@maven//:org_jetbrains_kotlin_kotlin_test",
+        "@maven//:org_jetbrains_kotlin_kotlin_test_junit",
+    ],
+)
+
+# V1model
+
+kt_jvm_binary(
+    name = "v1model_bin",
+    srcs = [
+        "Core.kt",
+        "V1model.kt",
+    ],
+    main_class = "p4kt.p4include.V1modelKt",
+    deps = ["//p4kt"],
+)
+
+sh_test(
+    name = "v1model_test",
+    srcs = ["//tools:golden_test.sh"],
+    args = [
+        "$(location :v1model_bin)",
+        "$(location v1model.p4)",
+    ],
+    data = [
+        "v1model.p4",
+        ":v1model_bin",
+    ],
+)
+
+kt_jvm_test(
+    name = "V1modelTest",
+    srcs = ["V1modelTest.kt"],
+    test_class = "p4kt.p4include.V1modelTest",
     deps = [
         ":p4include",
         "@maven//:org_jetbrains_kotlin_kotlin_test",
