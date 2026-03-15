@@ -128,6 +128,31 @@ fun p4Struct(name: String, block: FieldsBuilder.() -> Unit): P4Struct {
   return P4Struct(name, builder.build())
 }
 
+class FieldDelegate(
+  private val fields: MutableList<P4Field>,
+  private val expr: P4Expr,
+  private val type: P4Type,
+) {
+  operator fun provideDelegate(
+    thisRef: Any?,
+    property: kotlin.reflect.KProperty<*>,
+  ): ReadOnlyProperty<Any?, P4Expr> {
+    fields.add(P4Field(property.name, type))
+    val fieldAccess = P4Expr.FieldAccess(expr, property.name)
+    return ReadOnlyProperty { _, _ -> fieldAccess }
+  }
+}
+
+abstract class StructRef(val expr: P4Expr) {
+  val fields = mutableListOf<P4Field>()
+
+  fun field(type: P4Type) = FieldDelegate(fields, expr, type)
+
+  fun field(type: P4TypeReference) = FieldDelegate(fields, expr, type.typeRef)
+}
+
+abstract class HeaderRef(expr: P4Expr) : StructRef(expr)
+
 class ParamDelegate(
   private val params: MutableList<P4Param>,
   private val type: P4Type,
