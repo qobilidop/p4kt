@@ -45,7 +45,7 @@ control TopPipe(inout Parsed_packet headers, out OutControl outCtrl) {
     IPv4Address nextHop;
     action Set_nhop(IPv4Address ipv4_dest, PortId port) {
         nextHop = ipv4_dest;
-        headers.ip.ttl = (headers.ip.ttl - 1);
+        headers.ip.ttl = headers.ip.ttl - 1;
         outCtrl.outputPort = port;
     }
     table ipv4_match {
@@ -93,15 +93,15 @@ control TopPipe(inout Parsed_packet headers, out OutControl outCtrl) {
     }
     apply {
         ipv4_match.apply();
-        if ((outCtrl.outputPort == DROP_PORT)) {
+        if (outCtrl.outputPort == DROP_PORT) {
             return;
         }
         check_ttl.apply();
-        if ((outCtrl.outputPort == CPU_OUT_PORT)) {
+        if (outCtrl.outputPort == CPU_OUT_PORT) {
             return;
         }
         dmac.apply();
-        if ((outCtrl.outputPort == DROP_PORT)) {
+        if (outCtrl.outputPort == DROP_PORT) {
             return;
         }
         smac.apply();

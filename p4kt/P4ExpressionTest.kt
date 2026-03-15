@@ -53,27 +53,27 @@ class P4ExpressionTest {
   fun subtraction() {
     val a = P4Expr.Ref("a")
     val b = P4Expr.Ref("b")
-    assertEquals("(a - b)", (a - b).toP4())
+    assertEquals("a - b", (a - b).toP4())
   }
 
   @Test
   fun equality() {
     val a = P4Expr.Ref("a")
     val b = P4Expr.Ref("b")
-    assertEquals("(a == b)", (a eq b).toP4())
+    assertEquals("a == b", (a eq b).toP4())
   }
 
   @Test
   fun inequality() {
     val a = P4Expr.Ref("a")
     val b = P4Expr.Ref("b")
-    assertEquals("(a != b)", (a ne b).toP4())
+    assertEquals("a != b", (a ne b).toP4())
   }
 
   @Test
   fun nestedExpression() {
     val headers = P4Expr.Ref("headers")
     val ttl = P4Expr.FieldAccess(P4Expr.FieldAccess(headers, "ip"), "ttl")
-    assertEquals("(headers.ip.ttl - 1)", (ttl - lit(1)).toP4())
+    assertEquals("headers.ip.ttl - 1", (ttl - lit(1)).toP4())
   }
 }

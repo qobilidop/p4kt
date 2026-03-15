@@ -76,7 +76,7 @@ class P4StatementTest {
     assertEquals(
       """
             function void test(in bit<8> x) {
-                if ((x == 0)) {
+                if (x == 0) {
                     return 1;
                 }
             }
@@ -98,7 +98,7 @@ class P4StatementTest {
     assertEquals(
       """
             function bit<8> max(in bit<8> a, in bit<8> b) {
-                if ((a == b)) {
+                if (a == b) {
                     return a;
                 } else {
                     return b;
@@ -121,8 +121,8 @@ class P4StatementTest {
     assertEquals(
       """
             function void test(in bit<8> x) {
-                if ((x == 0)) {
-                    if ((x != 1)) {
+                if (x == 0) {
+                    if (x != 1) {
                         return x;
                     }
                 }

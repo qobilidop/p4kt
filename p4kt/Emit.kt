@@ -30,7 +30,11 @@ fun P4Expr.toP4(): String =
     is P4Expr.Lit -> "$value"
     is P4Expr.TypedLit -> "${width}w${value}"
     is P4Expr.FieldAccess -> "${expr.toP4()}.$field"
-    is P4Expr.BinOp -> "(${left.toP4()} ${op.toP4()} ${right.toP4()})"
+    is P4Expr.BinOp -> {
+      val leftStr = if (left is P4Expr.BinOp) "(${left.toP4()})" else left.toP4()
+      val rightStr = if (right is P4Expr.BinOp) "(${right.toP4()})" else right.toP4()
+      "$leftStr ${op.toP4()} $rightStr"
+    }
   }
 
 fun BinOpKind.toP4(): String =

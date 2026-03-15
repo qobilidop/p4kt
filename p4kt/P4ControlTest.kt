@@ -104,7 +104,7 @@ class P4ControlTest {
                   outCtrl.outputPort = 4w15;
               }
               apply {
-                  if ((outCtrl.outputPort == 4w15)) {
+                  if (outCtrl.outputPort == 4w15) {
                       return;
                   }
               }

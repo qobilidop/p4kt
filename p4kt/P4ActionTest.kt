@@ -35,7 +35,7 @@ class P4ActionTest {
       """
             action Set_nhop(IPv4Address ipv4_dest, PortId port) {
                 nextHop = ipv4_dest;
-                headers.ip.ttl = (headers.ip.ttl - 1);
+                headers.ip.ttl = headers.ip.ttl - 1;
                 outCtrl.outputPort = port;
             }
       """
