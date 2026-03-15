@@ -59,6 +59,10 @@ open class StatementBuilder {
     body.add(statement)
   }
 
+  fun P4TableRef.apply_() {
+    body.add(P4Statement.MethodCall(P4Expr.Ref(name), "apply", emptyList()))
+  }
+
   fun statements() = body.toList()
 }
 
@@ -245,10 +249,7 @@ fun p4Action(name: String, block: ActionBuilder.() -> Unit): P4Action {
   return builder.build(name)
 }
 
-class P4TableRef(val name: String) {
-  fun apply_(): P4Statement.MethodCall =
-    P4Statement.MethodCall(P4Expr.Ref(name), "apply", emptyList())
-}
+class P4TableRef(val name: String)
 
 class TableBuilder {
   private val keys = mutableListOf<P4KeyEntry>()

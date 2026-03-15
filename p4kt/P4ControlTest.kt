@@ -62,7 +62,7 @@ class P4ControlTest {
         }
 
         apply {
-          stmt(ipv4_match.apply_())
+          ipv4_match.apply_()
           if_(outCtrl.outputPort eq ref("DROP_PORT")) { return_() }
         }
       }

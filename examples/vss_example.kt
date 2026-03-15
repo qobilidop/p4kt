@@ -104,16 +104,16 @@ fun main() {
       }
 
       apply {
-        stmt(ipv4_match.apply_())
+        ipv4_match.apply_()
         if_(outCtrl.outputPort eq DROP_PORT) { return_() }
 
-        stmt(check_ttl.apply_())
+        check_ttl.apply_()
         if_(outCtrl.outputPort eq CPU_OUT_PORT) { return_() }
 
-        stmt(dmac.apply_())
+        dmac.apply_()
         if_(outCtrl.outputPort eq DROP_PORT) { return_() }
 
-        stmt(smac.apply_())
+        smac.apply_()
       }
     }
   }
