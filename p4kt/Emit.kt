@@ -40,7 +40,11 @@ fun BinOpKind.toP4(): String =
 
 fun P4Statement.toP4(): String =
   when (this) {
-    is P4Statement.Return -> "return ${expr.toP4()};"
+    is P4Statement.Return -> if (expr != null) "return ${expr.toP4()};" else "return;"
+    is P4Statement.MethodCall -> {
+      val argsStr = args.joinToString(", ") { it.toP4() }
+      "${expr.toP4()}.$method($argsStr);"
+    }
     is P4Statement.VarDecl ->
       if (init != null) {
         "${type.toP4()} $name = ${init.toP4()};"
@@ -94,6 +98,37 @@ fun P4Action.toP4(): String {
   }
 }
 
+fun MatchKind.toP4(): String =
+  when (this) {
+    MatchKind.EXACT -> "exact"
+    MatchKind.LPM -> "lpm"
+    MatchKind.TERNARY -> "ternary"
+  }
+
+fun P4LocalVar.toP4(): String = "${type.toP4()} $name;"
+
+fun P4Table.toP4(): String {
+  val keyEntries = keys.joinToString(" ") { "${it.expr.toP4()} : ${it.matchKind.toP4()};" }
+  val actionsStr = actions.joinToString("\n") { "        $it;" }
+  val sizeStr = if (size != null) "\n    size = $size;" else ""
+  val constStr = if (isDefaultActionConst) "const " else ""
+  return "table $name {\n" +
+    "    key = { $keyEntries }\n" +
+    "    actions = {\n$actionsStr\n    }$sizeStr\n" +
+    "    ${constStr}default_action = $defaultAction;\n}"
+}
+
+fun P4Control.toP4(): String {
+  val paramStr = params.joinToString(", ") { it.toP4() }
+  val declStr =
+    declarations.joinToString("\n") { decl -> decl.toP4().lines().joinToString("\n") { "    $it" } }
+  val bodyStr = indentBlock(body, "        ")
+  val innerParts = mutableListOf<String>()
+  if (declStr.isNotEmpty()) innerParts.add(declStr)
+  innerParts.add("    apply {\n$bodyStr\n    }")
+  return "control $name($paramStr) {\n${innerParts.joinToString("\n")}\n}"
+}
+
 fun P4Declaration.toP4(): String =
   when (this) {
     is P4Function -> (this as P4Function).toP4()
@@ -102,6 +137,9 @@ fun P4Declaration.toP4(): String =
     is P4Struct -> (this as P4Struct).toP4()
     is P4Const -> (this as P4Const).toP4()
     is P4Action -> (this as P4Action).toP4()
+    is P4Table -> (this as P4Table).toP4()
+    is P4Control -> (this as P4Control).toP4()
+    is P4LocalVar -> (this as P4LocalVar).toP4()
   }
 
 fun P4Program.toP4(): String = declarations.joinToString("\n\n") { it.toP4() }

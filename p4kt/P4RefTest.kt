@@ -150,6 +150,26 @@ class P4RefTest {
   }
 
   @Test
+  fun voidReturn() {
+    val a =
+      p4Action("Drop") {
+        assign(ref("x"), lit(1))
+        return_()
+      }
+
+    assertEquals(
+      """
+          action Drop() {
+              x = 1;
+              return;
+          }
+      """
+        .trimIndent(),
+      a.toP4(),
+    )
+  }
+
+  @Test
   fun headerRegistrationGeneratesIrDeclaration() {
     val program = p4Program {
       class Ipv4_h(base: P4Expr) : HeaderRef(base) {

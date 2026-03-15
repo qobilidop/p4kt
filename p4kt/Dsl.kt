@@ -47,6 +47,10 @@ open class StatementBuilder {
     body.add(P4Statement.Return(expr))
   }
 
+  fun return_() {
+    body.add(P4Statement.Return(null))
+  }
+
   fun statements() = body.toList()
 }
 

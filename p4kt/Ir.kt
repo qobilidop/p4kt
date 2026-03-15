@@ -37,7 +37,10 @@ enum class BinOpKind {
 }
 
 sealed class P4Statement {
-  data class Return(val expr: P4Expr) : P4Statement()
+  data class Return(val expr: P4Expr?) : P4Statement()
+
+  data class MethodCall(val expr: P4Expr, val method: String, val args: List<P4Expr>) :
+    P4Statement()
 
   data class VarDecl(val name: String, val type: P4Type, val init: P4Expr?) : P4Statement()
 
@@ -84,5 +87,31 @@ data class P4Const(val name: String, val type: P4Type, val value: P4Expr) : P4De
 
 data class P4Action(val name: String, val params: List<P4Param>, val body: List<P4Statement>) :
   P4Declaration
+
+enum class MatchKind {
+  EXACT,
+  LPM,
+  TERNARY,
+}
+
+data class P4KeyEntry(val expr: P4Expr, val matchKind: MatchKind)
+
+data class P4Table(
+  val name: String,
+  val keys: List<P4KeyEntry>,
+  val actions: List<String>,
+  val size: Int? = null,
+  val defaultAction: String,
+  val isDefaultActionConst: Boolean,
+) : P4Declaration
+
+data class P4Control(
+  val name: String,
+  val params: List<P4Param>,
+  val declarations: List<P4Declaration>,
+  val body: List<P4Statement>,
+) : P4Declaration
+
+data class P4LocalVar(val name: String, val type: P4Type) : P4Declaration
 
 data class P4Program(val declarations: List<P4Declaration>)
