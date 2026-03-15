@@ -14,7 +14,7 @@ Provide an ergonomic Kotlin eDSL for writing P4 programs, targeting developers a
 
 ## Architecture
 
-Three layers, all in the `p4kt/` package (flat layout, split later when warranted):
+Three layers, all in the `p4kt` package:
 
 ```
 User code (DSL) → IR (immutable data classes) → Renderer (P4 source text)
@@ -99,12 +99,13 @@ User code (DSL) → IR (immutable data classes) → Renderer (P4 source text)
 ## Design decisions
 
 - **Builder-centric**: DSL builders are the API. IR is internal. Expose IR only if a use case arises.
-- **Flat package layout**: Everything in `p4kt/`. Split into sub-packages when complexity warrants it.
+- **Gradle-convention layout**: Source in `src/main/kotlin/`, tests in `src/test/kotlin/`. Both Bazel and Gradle read from the same source tree.
 - **Named operators over symbols**: Kotlin can't overload comparison/bitwise operators to return expression nodes. Named operators (`gt`, `band`) are the standard eDSL trade-off.
 - **`lit()` for literals**: Required to bridge Kotlin values into P4 expression trees.
 - **Trailing underscores for keywords**: `if_`, `return_`, `else_` - a common Kotlin eDSL convention.
 - **Typed field access via ref classes**: P4 struct/header types are Kotlin classes extending `StructRef`/`HeaderRef`, registered via `struct(::ClassName)` / `header(::ClassName)`. Field access uses real Kotlin properties, enabling IDE autocomplete and compile-time checking.
 - **Constructor references over reflection**: Factory lambdas (`::ClassName`) are used instead of reflection-based instantiation. Constructor references properly handle variable captures from enclosing scopes, avoiding the need for `kotlin-reflect`.
+- **P4 naming for domain objects**: p4include objects (`core`, `v1model`) and examples (`vss_arch`, `vss_example`) use P4's naming convention (lowercase/snake_case) instead of Kotlin's PascalCase. This follows the precedent set by kotlinx.html and kotlin-css, which break Kotlin naming conventions to match their target domain.
 
 ## Future ideas
 
