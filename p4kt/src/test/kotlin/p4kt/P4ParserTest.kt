@@ -110,14 +110,15 @@ class P4ParserTest {
   fun paramAcceptsTypeReference() {
     val externType = P4Extern("packet_in", emptyList())
 
-    val program = p4Program {
-      @Suppress("UnusedPrivateProperty")
-      val TopParser by parser {
-        val b by param(externType)
+    val program =
+      P4.program {
+        @Suppress("UnusedPrivateProperty")
+        val TopParser by parser {
+          val b by param(externType)
 
-        @Suppress("UnusedPrivateProperty") val start by state { transition(P4.accept) }
+          @Suppress("UnusedPrivateProperty") val start by state { transition(P4.accept) }
+        }
       }
-    }
 
     assertTrue(program.toP4().contains("packet_in b"))
   }
@@ -152,26 +153,27 @@ class P4ParserTest {
       val ip by field(P4Type.Named("Ipv4_h"))
     }
 
-    val program = p4Program {
-      struct(::Parsed_packet)
-
-      @Suppress("UnusedPrivateProperty")
-      val TopParser by parser {
-        val b by param(P4.packet_in)
-        val p by param(::Parsed_packet, P4.OUT)
-
-        val parse_ipv4 by state {
-          call(b, "extract", p.ip)
-          transition(P4.accept)
-        }
+    val program =
+      P4.program {
+        struct(::Parsed_packet)
 
         @Suppress("UnusedPrivateProperty")
-        val start by state {
-          call(b, "extract", p.ethernet.expr)
-          select(p.ethernet.etherType) { P4.lit(0x0800) to parse_ipv4 }
+        val TopParser by parser {
+          val b by param(P4.packet_in)
+          val p by param(::Parsed_packet, P4.OUT)
+
+          val parse_ipv4 by state {
+            call(b, "extract", p.ip)
+            transition(P4.accept)
+          }
+
+          @Suppress("UnusedPrivateProperty")
+          val start by state {
+            call(b, "extract", p.ethernet.expr)
+            select(p.ethernet.etherType) { P4.lit(0x0800) to parse_ipv4 }
+          }
         }
       }
-    }
 
     val output = program.toP4()
     assertTrue(output.contains("state start"), "should contain start state")

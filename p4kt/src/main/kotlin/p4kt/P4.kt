@@ -198,13 +198,13 @@ object P4 {
     private val declarations = mutableListOf<P4Declaration>()
 
     protected fun typedef(name: String, type: P4Type): P4Typedef {
-      val td = p4Typedef(name, type)
+      val td = P4Typedef(name, type)
       declarations.add(td)
       return td
     }
 
     protected fun const_(name: String, type: P4Type, value: P4Expr): P4Const {
-      val c = p4Const(name, type, value)
+      val c = P4Const(name, type, value)
       declarations.add(c)
       return c
     }
@@ -265,10 +265,52 @@ object P4 {
       return ReadOnlyProperty { _, _ -> instance }
     }
   }
-}
 
-fun p4Program(block: ProgramBuilder.() -> Unit): P4Program {
-  val builder = ProgramBuilder()
-  builder.block()
-  return builder.build()
+  // Factory functions
+
+  fun program(block: ProgramBuilder.() -> Unit): P4Program {
+    val builder = ProgramBuilder()
+    builder.block()
+    return builder.build()
+  }
+
+  fun action(name: String, block: ActionBuilder.() -> Unit): P4Action {
+    val builder = ActionBuilder()
+    builder.block()
+    return builder.build(name)
+  }
+
+  fun function(name: String, returnType: P4Type, block: FunctionBuilder.() -> Unit): P4Function {
+    val builder = FunctionBuilder(name, returnType)
+    builder.block()
+    return builder.build()
+  }
+
+  fun table(name: String, block: TableBuilder.() -> Unit): P4Table {
+    val builder = TableBuilder()
+    builder.block()
+    return builder.build(name)
+  }
+
+  fun control(name: String, block: ControlBuilder.() -> Unit): P4Control {
+    val builder = ControlBuilder()
+    builder.block()
+    return builder.build(name)
+  }
+
+  fun const_(name: String, type: P4Type, value: P4Expr) = P4Const(name, type, value)
+
+  fun typedef(name: String, type: P4Type) = P4Typedef(name, type)
+
+  fun header(name: String, block: FieldsBuilder.() -> Unit): P4Header {
+    val builder = FieldsBuilder()
+    builder.block()
+    return P4Header(name, builder.build())
+  }
+
+  fun struct(name: String, block: FieldsBuilder.() -> Unit): P4Struct {
+    val builder = FieldsBuilder()
+    builder.block()
+    return P4Struct(name, builder.build())
+  }
 }

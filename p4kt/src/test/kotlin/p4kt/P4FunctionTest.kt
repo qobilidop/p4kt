@@ -7,7 +7,7 @@ class P4FunctionTest {
   @Test
   fun identityFunction() {
     val id =
-      p4Function("id", P4.bit(8)) {
+      P4.function("id", P4.bit(8)) {
         val x by param(P4.bit(8), P4.IN)
         return_(x)
       }

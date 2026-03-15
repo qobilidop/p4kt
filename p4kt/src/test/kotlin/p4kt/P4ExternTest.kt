@@ -36,14 +36,15 @@ class P4ExternTest {
 
   @Test
   fun externDsl() {
-    val program = p4Program {
-      @Suppress("UnusedPrivateProperty")
-      val Ck16 by extern {
-        constructor_()
-        method("clear", P4.void_)
-        method("get", P4.bit(16))
+    val program =
+      P4.program {
+        @Suppress("UnusedPrivateProperty")
+        val Ck16 by extern {
+          constructor_()
+          method("clear", P4.void_)
+          method("get", P4.bit(16))
+        }
       }
-    }
     assertEquals(
       """
                 extern Ck16 {
@@ -67,7 +68,7 @@ class P4ExternTest {
   fun externInstanceInControl() {
     val ext = P4Extern("Ck16", emptyList())
     val ctrl =
-      p4Control("MyCtrl") {
+      P4.control("MyCtrl") {
         val ck by externInstance(ext)
         apply { call(ck, "clear") }
       }

@@ -7,7 +7,7 @@ class P4HeaderTest {
   @Test
   fun ethernetHeader() {
     val ethernetH =
-      p4Header("Ethernet_h") {
+      P4.header("Ethernet_h") {
         field("dstAddr", P4.typeName("EthernetAddress"))
         field("srcAddr", P4.typeName("EthernetAddress"))
         field("etherType", P4.bit(16))

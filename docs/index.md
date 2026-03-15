@@ -9,8 +9,8 @@ Write P4 programs using Kotlin's type system and DSL builders:
 <div class="grid" markdown>
 
 ```kotlin title="P4kt"
-val id = p4Function("id", bit(8)) {
-    val x by param(bit(8), IN)
+val id = P4.function("id", P4.bit(8)) {
+    val x by param(P4.bit(8), P4.IN)
     return_(x)
 }
 println(id.toP4())

@@ -107,13 +107,10 @@ User code (DSL) → IR (immutable data classes) → Renderer (P4 source text)
 - **Constructor references over reflection**: Factory lambdas (`::ClassName`) are used instead of reflection-based instantiation. Constructor references properly handle variable captures from enclosing scopes, avoiding the need for `kotlin-reflect`.
 - **P4 naming for domain objects**: p4include objects (`core`, `v1model`) and examples (`vss_arch`, `vss_example`) use P4's naming convention (lowercase/snake_case) instead of Kotlin's PascalCase. This follows the precedent set by kotlinx.html and kotlin-css, which break Kotlin naming conventions to match their target domain.
 - **`@P4DslMarker` annotation**: All builder classes used as DSL receivers are annotated with `@P4DslMarker` (a `@DslMarker` annotation). This prevents accidental scope leakage in nested DSL blocks.
+- **Factory functions on `P4` object**: All factory functions (`P4.program {}`, `P4.action {}`, `P4.typedef()`, etc.) live on the `P4` object rather than as top-level functions. This avoids polluting the package namespace and is consistent with how users already use `P4.bit()`, `P4.ref()`, etc.
 
 ## Future ideas
 
 ### Internal IR visibility
 
 Make IR types (`P4Type`, `P4Expr`, `P4Statement`, etc.) internal. The design says "IR is an internal implementation detail," but these types are currently public. Enforce the boundary when multi-module support is added.
-
-### Namespace factory functions under P4 object
-
-Move top-level factory functions (`p4Program`, `p4Action`, `p4Control`, etc.) into the `P4` object (e.g., `P4.program {}`, `P4.action {}`). This avoids polluting the package namespace and is consistent with how users already use `P4.bit()`, `P4.ref()`, etc.

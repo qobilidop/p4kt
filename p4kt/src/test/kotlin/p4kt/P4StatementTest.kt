@@ -7,7 +7,7 @@ class P4StatementTest {
   @Test
   fun varDeclWithInit() {
     val fn =
-      p4Function("test", P4.void_) {
+      P4.function("test", P4.void_) {
         val x by param(P4.bit(8), P4.IN)
         val tmp by varDecl(P4.bit(8), x)
       }
@@ -26,7 +26,7 @@ class P4StatementTest {
   @Test
   fun varDeclWithoutInit() {
     val fn =
-      p4Function("test", P4.void_) {
+      P4.function("test", P4.void_) {
         val tmp by varDecl(P4.bit(8))
       }
 
@@ -44,7 +44,7 @@ class P4StatementTest {
   @Test
   fun assignment() {
     val fn =
-      p4Function("swap", P4.void_) {
+      P4.function("swap", P4.void_) {
         val x by param(P4.bit(8), P4.INOUT)
         val y by param(P4.bit(8), P4.INOUT)
         val tmp by varDecl(P4.bit(8), x)
@@ -68,7 +68,7 @@ class P4StatementTest {
   @Test
   fun ifStatement() {
     val fn =
-      p4Function("test", P4.void_) {
+      P4.function("test", P4.void_) {
         val x by param(P4.bit(8), P4.IN)
         if_(x eq P4.lit(0)) { return_(P4.lit(1)) }
       }
@@ -89,7 +89,7 @@ class P4StatementTest {
   @Test
   fun ifElseStatement() {
     val fn =
-      p4Function("max", P4.bit(8)) {
+      P4.function("max", P4.bit(8)) {
         val a by param(P4.bit(8), P4.IN)
         val b by param(P4.bit(8), P4.IN)
         if_(a eq b) { return_(a) }.else_ { return_(b) }
@@ -147,7 +147,7 @@ class P4StatementTest {
   @Test
   fun verifyDsl() {
     val fn =
-      p4Function("test", P4.void_) {
+      P4.function("test", P4.void_) {
         val x by param(P4.bit(4), P4.IN)
         verify(x eq P4.lit(4, 4), P4.error_("BadVersion"))
       }
@@ -170,7 +170,7 @@ class P4StatementTest {
 
   @Test
   fun functionCallDsl() {
-    val fn = p4Function("test", P4.void_) { call("Drop_action") }
+    val fn = P4.function("test", P4.void_) { call("Drop_action") }
     assertEquals(
       """
             function void test() {
@@ -185,7 +185,7 @@ class P4StatementTest {
   @Test
   fun nestedIfInFunction() {
     val fn =
-      p4Function("test", P4.void_) {
+      P4.function("test", P4.void_) {
         val x by param(P4.bit(8), P4.IN)
         if_(x eq P4.lit(0)) { if_(x ne P4.lit(1)) { return_(x) } }
       }

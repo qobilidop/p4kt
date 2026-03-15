@@ -7,7 +7,7 @@ class P4StructTest {
   @Test
   fun parsedPacketStruct() {
     val parsedPacket =
-      p4Struct("Parsed_packet") {
+      P4.struct("Parsed_packet") {
         field("ethernet", P4.typeName("Ethernet_h"))
         field("ip", P4.typeName("Ipv4_h"))
       }

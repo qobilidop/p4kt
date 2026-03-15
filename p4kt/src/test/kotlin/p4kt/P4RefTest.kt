@@ -61,12 +61,13 @@ class P4RefTest {
 
   @Test
   fun structRegistrationGeneratesIrDeclaration() {
-    val program = p4Program {
-      class OutControl(base: P4Expr) : P4.StructRef(base) {
-        val outputPort by field(P4.bit(4))
+    val program =
+      P4.program {
+        class OutControl(base: P4Expr) : P4.StructRef(base) {
+          val outputPort by field(P4.bit(4))
+        }
+        struct(::OutControl)
       }
-      struct(::OutControl)
-    }
 
     assertEquals(
       """
@@ -86,7 +87,7 @@ class P4RefTest {
     }
 
     val a =
-      p4Action("Drop") {
+      P4.action("Drop") {
         val outCtrl by param(::OutControl, P4.INOUT)
         assign(outCtrl.outputPort, P4.lit(4, 0xF))
       }
@@ -107,7 +108,7 @@ class P4RefTest {
     @Suppress("VariableNaming") val PortId = P4Typedef("PortId", P4.bit(4))
 
     val a =
-      p4Action("Set") {
+      P4.action("Set") {
         val port by param(PortId)
         assign(P4.ref("outPort"), port)
       }
@@ -128,7 +129,7 @@ class P4RefTest {
     @Suppress("VariableNaming") val PortId = P4Typedef("PortId", P4.bit(4))
 
     val a =
-      p4Action("Set") {
+      P4.action("Set") {
         val port by param(PortId, P4.IN)
         assign(P4.ref("outPort"), port)
       }
@@ -152,7 +153,7 @@ class P4RefTest {
   @Test
   fun voidReturn() {
     val a =
-      p4Action("Drop") {
+      P4.action("Drop") {
         assign(P4.ref("x"), P4.lit(1))
         return_()
       }
@@ -208,16 +209,17 @@ class P4RefTest {
       val ttl by field(P4.bit(8))
     }
 
-    val program = p4Program {
-      header(::Ethernet_h)
-      header(::Ipv4_h)
+    val program =
+      P4.program {
+        header(::Ethernet_h)
+        header(::Ipv4_h)
 
-      class Parsed_packet(base: P4Expr) : P4.StructRef(base) {
-        val ethernet by field(::Ethernet_h)
-        val ip by field(::Ipv4_h)
+        class Parsed_packet(base: P4Expr) : P4.StructRef(base) {
+          val ethernet by field(::Ethernet_h)
+          val ip by field(::Ipv4_h)
+        }
+        struct(::Parsed_packet)
       }
-      struct(::Parsed_packet)
-    }
 
     assertEquals(
       """
@@ -241,13 +243,14 @@ class P4RefTest {
 
   @Test
   fun headerRegistrationGeneratesIrDeclaration() {
-    val program = p4Program {
-      class Ipv4_h(base: P4Expr) : P4.HeaderRef(base) {
-        val ttl by field(P4.bit(8))
-        val srcAddr by field(P4.bit(32))
+    val program =
+      P4.program {
+        class Ipv4_h(base: P4Expr) : P4.HeaderRef(base) {
+          val ttl by field(P4.bit(8))
+          val srcAddr by field(P4.bit(32))
+        }
+        header(::Ipv4_h)
       }
-      header(::Ipv4_h)
-    }
 
     assertEquals(
       """

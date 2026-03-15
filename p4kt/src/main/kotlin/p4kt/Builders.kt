@@ -397,7 +397,7 @@ class ControlBuilder : StatementBuilder() {
 
   fun action(block: ActionBuilder.() -> Unit) =
     DeclDelegate<P4Action>(
-      factory = { name -> p4Action(name, block) },
+      factory = { name -> P4.action(name, block) },
       register = { declarations.add(it) },
     )
 
@@ -491,48 +491,6 @@ class ParserBuilder {
   }
 }
 
-// Factory functions
-
-fun p4Action(name: String, block: ActionBuilder.() -> Unit): P4Action {
-  val builder = ActionBuilder()
-  builder.block()
-  return builder.build(name)
-}
-
-fun p4Function(name: String, returnType: P4Type, block: FunctionBuilder.() -> Unit): P4Function {
-  val builder = FunctionBuilder(name, returnType)
-  builder.block()
-  return builder.build()
-}
-
-fun p4Table(name: String, block: TableBuilder.() -> Unit): P4Table {
-  val builder = TableBuilder()
-  builder.block()
-  return builder.build(name)
-}
-
-fun p4Control(name: String, block: ControlBuilder.() -> Unit): P4Control {
-  val builder = ControlBuilder()
-  builder.block()
-  return builder.build(name)
-}
-
-fun p4Const(name: String, type: P4Type, value: P4Expr) = P4Const(name, type, value)
-
-fun p4Typedef(name: String, type: P4Type) = P4Typedef(name, type)
-
-fun p4Header(name: String, block: FieldsBuilder.() -> Unit): P4Header {
-  val builder = FieldsBuilder()
-  builder.block()
-  return P4Header(name, builder.build())
-}
-
-fun p4Struct(name: String, block: FieldsBuilder.() -> Unit): P4Struct {
-  val builder = FieldsBuilder()
-  builder.block()
-  return P4Struct(name, builder.build())
-}
-
 // Program builder
 
 @P4DslMarker
@@ -545,19 +503,19 @@ class ProgramBuilder {
 
   fun typedef(type: P4Type) =
     DeclDelegate<P4Typedef>(
-      factory = { name -> p4Typedef(name, type) },
+      factory = { name -> P4.typedef(name, type) },
       register = { declarations.add(it) },
     )
 
   fun header(block: FieldsBuilder.() -> Unit) =
     DeclDelegate<P4Header>(
-      factory = { name -> p4Header(name, block) },
+      factory = { name -> P4.header(name, block) },
       register = { declarations.add(it) },
     )
 
   fun struct(block: FieldsBuilder.() -> Unit) =
     DeclDelegate<P4Struct>(
-      factory = { name -> p4Struct(name, block) },
+      factory = { name -> P4.struct(name, block) },
       register = { declarations.add(it) },
     )
 
@@ -568,7 +526,7 @@ class ProgramBuilder {
 
   fun action(block: ActionBuilder.() -> Unit) =
     DeclDelegate<P4Action>(
-      factory = { name -> p4Action(name, block) },
+      factory = { name -> P4.action(name, block) },
       register = { declarations.add(it) },
     )
 
@@ -584,13 +542,13 @@ class ProgramBuilder {
 
   fun control(block: ControlBuilder.() -> Unit) =
     DeclDelegate<P4Control>(
-      factory = { name -> p4Control(name, block) },
+      factory = { name -> P4.control(name, block) },
       register = { declarations.add(it) },
     )
 
   fun function(returnType: P4Type, block: FunctionBuilder.() -> Unit) =
     DeclDelegate<P4Function>(
-      factory = { name -> p4Function(name, returnType, block) },
+      factory = { name -> P4.function(name, returnType, block) },
       register = { declarations.add(it) },
     )
 

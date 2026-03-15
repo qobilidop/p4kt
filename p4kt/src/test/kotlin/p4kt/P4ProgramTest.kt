@@ -3,7 +3,7 @@ package p4kt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@Suppress("MagicNumber") private val testPortId = p4Typedef("PortId", P4.bit(4))
+@Suppress("MagicNumber") private val testPortId = P4.typedef("PortId", P4.bit(4))
 
 private class TestMyStruct(base: P4Expr) : P4.StructRef(base) {
   val port by field(testPortId)
@@ -33,20 +33,21 @@ private val testLibExtern =
 class P4ProgramTest {
   @Test
   fun programWithMultipleDeclarations() {
-    val program = p4Program {
-      val EthernetAddress by typedef(P4.bit(48))
+    val program =
+      P4.program {
+        val EthernetAddress by typedef(P4.bit(48))
 
-      class Ethernet_h(base: P4Expr) : P4.HeaderRef(base) {
-        val dstAddr by field(EthernetAddress)
-        val etherType by field(P4.bit(16))
-      }
-      header(::Ethernet_h)
+        class Ethernet_h(base: P4Expr) : P4.HeaderRef(base) {
+          val dstAddr by field(EthernetAddress)
+          val etherType by field(P4.bit(16))
+        }
+        header(::Ethernet_h)
 
-      class Parsed_packet(base: P4Expr) : P4.StructRef(base) {
-        val ethernet by field(P4.typeName("Ethernet_h"))
+        class Parsed_packet(base: P4Expr) : P4.StructRef(base) {
+          val ethernet by field(P4.typeName("Ethernet_h"))
+        }
+        struct(::Parsed_packet)
       }
-      struct(::Parsed_packet)
-    }
 
     assertEquals(
       """
@@ -68,13 +69,14 @@ class P4ProgramTest {
 
   @Test
   fun declarePreBuiltDeclarations() {
-    val portId = p4Typedef("PortId", P4.bit(4))
-    val dropPort = p4Const("DROP_PORT", portId.typeRef, P4.lit(4, 0xF))
+    val portId = P4.typedef("PortId", P4.bit(4))
+    val dropPort = P4.const_("DROP_PORT", portId.typeRef, P4.lit(4, 0xF))
 
-    val program = p4Program {
-      declare(portId)
-      declare(dropPort)
-    }
+    val program =
+      P4.program {
+        declare(portId)
+        declare(dropPort)
+      }
 
     assertEquals(
       """
@@ -89,16 +91,17 @@ class P4ProgramTest {
 
   @Test
   fun declareStructRefFromLibrary() {
-    val portId = p4Typedef("PortId", P4.bit(4))
+    val portId = P4.typedef("PortId", P4.bit(4))
 
     class InControl(base: P4Expr) : P4.StructRef(base) {
       val inputPort by field(portId)
     }
 
-    val program = p4Program {
-      declare(portId)
-      struct(::InControl)
-    }
+    val program =
+      P4.program {
+        declare(portId)
+        struct(::InControl)
+      }
 
     assertEquals(
       """
@@ -115,12 +118,13 @@ class P4ProgramTest {
 
   @Test
   fun constRef() {
-    val dropPort = p4Const("DROP_PORT", P4.typeName("PortId"), P4.lit(4, 0xF))
+    val dropPort = P4.const_("DROP_PORT", P4.typeName("PortId"), P4.lit(4, 0xF))
 
-    val program = p4Program {
-      @Suppress("UnusedPrivateProperty")
-      val Drop_action by action { assign(P4.ref("out"), dropPort.ref) }
-    }
+    val program =
+      P4.program {
+        @Suppress("UnusedPrivateProperty")
+        val Drop_action by action { assign(P4.ref("out"), dropPort.ref) }
+      }
 
     assert("DROP_PORT" in program.toP4()) { "DROP_PORT should be used as reference" }
   }
@@ -169,7 +173,7 @@ class P4ProgramTest {
 
   @Test
   @Suppress("MagicNumber")
-  fun p4StructRefInsideP4Object() {
+  fun structRefInsideP4Object() {
     class MyStruct(base: P4Expr) : P4.StructRef(base) {
       val port by field(P4.bit(4))
     }
@@ -207,9 +211,8 @@ class P4ProgramTest {
 
   @Test
   fun packageInstantiationDsl() {
-    val program = p4Program {
-      packageInstance("VSS", "main", "TopParser", "TopPipe", "TopDeparser")
-    }
+    val program =
+      P4.program { packageInstance("VSS", "main", "TopParser", "TopPipe", "TopDeparser") }
     assertEquals("VSS(TopParser(), TopPipe(), TopDeparser()) main;", program.toP4())
   }
 }

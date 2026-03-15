@@ -23,7 +23,7 @@ class P4ErrorTest {
 
   @Test
   fun errorInProgram() {
-    val program = p4Program { errors("IPv4OptionsNotSupported", "IPv4IncorrectVersion") }
+    val program = P4.program { errors("IPv4OptionsNotSupported", "IPv4IncorrectVersion") }
     assertEquals(
       """
                 error {

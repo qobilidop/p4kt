@@ -6,7 +6,7 @@ import kotlin.test.assertEquals
 class P4ActionTest {
   @Test
   fun emptyAction() {
-    val a = p4Action("NoAction") {}
+    val a = P4.action("NoAction") {}
     assertEquals(
       """
             action NoAction() {
@@ -20,7 +20,7 @@ class P4ActionTest {
   @Test
   fun actionWithDirectionlessParams() {
     val a =
-      p4Action("Set_nhop") {
+      P4.action("Set_nhop") {
         val ipv4_dest by param(P4.typeName("IPv4Address"))
         val port by param(P4.typeName("PortId"))
         assign(P4.ref("nextHop"), ipv4_dest)

@@ -6,7 +6,8 @@ import kotlin.test.assertEquals
 class P4ControlTest {
   @Test
   fun stmtAddsArbitraryStatement() {
-    val a = p4Action("Test") { stmt(P4Statement.MethodCall(P4Expr.Ref("t"), "apply", emptyList())) }
+    val a =
+      P4.action("Test") { stmt(P4Statement.MethodCall(P4Expr.Ref("t"), "apply", emptyList())) }
 
     assertEquals(
       """
@@ -21,11 +22,11 @@ class P4ControlTest {
 
   @Test
   fun tableDsl() {
-    val dropAction = p4Action("Drop_action") {}
-    val setNhop = p4Action("Set_nhop") {}
+    val dropAction = P4.action("Drop_action") {}
+    val setNhop = P4.action("Set_nhop") {}
 
     val table =
-      p4Table("ipv4_match") {
+      P4.table("ipv4_match") {
         key(P4Expr.FieldAccess(P4Expr.Ref("headers"), "dstAddr"), P4.LPM)
         actions(dropAction, setNhop)
         size(1024)
@@ -47,7 +48,7 @@ class P4ControlTest {
     @Suppress("VariableNaming") val IPv4Address = P4Typedef("IPv4Address", P4.bit(32))
 
     val ctrl =
-      p4Control("TopPipe") {
+      P4.control("TopPipe") {
         val outCtrl by param(::OutControl, P4.OUT)
 
         val Drop_action by action { assign(outCtrl.outputPort, P4.ref("DROP_PORT")) }
@@ -79,19 +80,20 @@ class P4ControlTest {
       val outputPort by field(P4.bit(4))
     }
 
-    val program = p4Program {
-      struct(::OutControl)
-
-      @Suppress("UnusedPrivateProperty")
-      val TopPipe by control {
-        val outCtrl by param(::OutControl, P4.OUT)
+    val program =
+      P4.program {
+        struct(::OutControl)
 
         @Suppress("UnusedPrivateProperty")
-        val Drop by action { assign(outCtrl.outputPort, P4.lit(4, 0xF)) }
+        val TopPipe by control {
+          val outCtrl by param(::OutControl, P4.OUT)
 
-        apply { if_(outCtrl.outputPort eq P4.lit(4, 0xF)) { return_() } }
+          @Suppress("UnusedPrivateProperty")
+          val Drop by action { assign(outCtrl.outputPort, P4.lit(4, 0xF)) }
+
+          apply { if_(outCtrl.outputPort eq P4.lit(4, 0xF)) { return_() } }
+        }
       }
-    }
 
     assertEquals(
       """
@@ -117,7 +119,7 @@ class P4ControlTest {
 
   @Test
   fun callDslStatement() {
-    val action = p4Action("test") { call(P4Expr.Ref("ck"), "clear") }
+    val action = P4.action("test") { call(P4Expr.Ref("ck"), "clear") }
     assertEquals(
       """
           action test() {
@@ -131,7 +133,7 @@ class P4ControlTest {
 
   @Test
   fun callDslStatementWithArgs() {
-    val action = p4Action("test") { call(P4Expr.Ref("b"), "extract", P4Expr.Ref("p")) }
+    val action = P4.action("test") { call(P4Expr.Ref("b"), "extract", P4Expr.Ref("p")) }
     assertEquals(
       """
           action test() {
@@ -209,9 +211,9 @@ class P4ControlTest {
 
   @Test
   fun tableWithStringActions() {
-    val dropAction = p4Action("Drop") {}
+    val dropAction = P4.action("Drop") {}
     val table =
-      p4Table("check_ttl") {
+      P4.table("check_ttl") {
         key(P4Expr.Ref("ttl"), P4.EXACT)
         actions(dropAction)
         actionByName("NoAction")
