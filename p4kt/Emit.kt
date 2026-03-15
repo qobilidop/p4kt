@@ -170,6 +170,30 @@ fun P4Extern.toP4(): String {
 
 fun P4ExternInstance.toP4(): String = "$typeName() $name;"
 
+fun P4ParserState.toP4(): String {
+  val bodyStr = indentBlock(body, "    ")
+  return "state $name {\n$bodyStr\n}"
+}
+
+fun P4Parser.toP4(): String {
+  val paramStr = params.joinToString(", ") { it.toP4() }
+  val innerParts = mutableListOf<String>()
+  if (declarations.isNotEmpty()) {
+    val declStr =
+      declarations.joinToString("\n") { decl ->
+        decl.toP4().lines().joinToString("\n") { "    $it" }
+      }
+    innerParts.add(declStr)
+  }
+  val startState = states.find { it.name == "start" }
+  val otherStates = states.filter { it.name != "start" }
+  val orderedStates = listOfNotNull(startState) + otherStates
+  for (state in orderedStates) {
+    innerParts.add(state.toP4().lines().joinToString("\n") { "    $it" })
+  }
+  return "parser $name($paramStr) {\n${innerParts.joinToString("\n")}\n}"
+}
+
 fun P4Declaration.toP4(): String =
   when (this) {
     is P4Function -> (this as P4Function).toP4()
@@ -184,6 +208,7 @@ fun P4Declaration.toP4(): String =
     is P4Error -> (this as P4Error).toP4()
     is P4Extern -> (this as P4Extern).toP4()
     is P4ExternInstance -> (this as P4ExternInstance).toP4()
+    is P4Parser -> (this as P4Parser).toP4()
   }
 
 fun P4Program.toP4(): String = declarations.joinToString("\n\n") { it.toP4() }

@@ -150,3 +150,10 @@ abstract class HeaderRef(expr: P4Expr) : StructRef(expr)
 // Table ref
 
 class P4TableRef(val name: String)
+
+// Parser state ref
+
+class P4StateRef(val name: String)
+
+val accept = P4StateRef("accept")
+val reject = P4StateRef("reject")

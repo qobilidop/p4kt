@@ -273,6 +273,76 @@ class ControlBuilder : StatementBuilder() {
   fun build(name: String) = P4Control(name, params, declarations, body)
 }
 
+class StateDeclDelegate(
+  private val deferredStates: MutableList<Pair<String, StateBuilder.() -> Unit>>,
+  private val block: StateBuilder.() -> Unit,
+) {
+  operator fun provideDelegate(
+    thisRef: Any?,
+    property: kotlin.reflect.KProperty<*>,
+  ): ReadOnlyProperty<Any?, P4StateRef> {
+    deferredStates.add(property.name to block)
+    return ReadOnlyProperty { _, _ -> P4StateRef(property.name) }
+  }
+}
+
+class StateBuilder : StatementBuilder() {
+  fun transition(stateRef: P4StateRef) {
+    body.add(P4Statement.Transition(stateRef.name))
+  }
+
+  fun select(expr: P4Expr, block: SelectBuilder.() -> Unit) {
+    val builder = SelectBuilder()
+    builder.block()
+    body.add(P4Statement.TransitionSelect(expr, builder.cases()))
+  }
+
+  fun build(name: String) = P4ParserState(name, body)
+}
+
+class SelectBuilder {
+  private val cases = mutableListOf<Pair<P4Expr, String>>()
+
+  infix fun P4Expr.to(stateRef: P4StateRef) {
+    cases.add(this to stateRef.name)
+  }
+
+  fun cases() = cases.toList()
+}
+
+class ParserBuilder {
+  private val params = mutableListOf<P4Param>()
+  private val declarations = mutableListOf<P4Declaration>()
+  private val deferredStates = mutableListOf<Pair<String, StateBuilder.() -> Unit>>()
+
+  fun param(type: P4Type) = ParamDelegate(params, type)
+
+  fun param(type: P4Type, direction: Direction) = ParamDelegate(params, type, direction)
+
+  fun param(type: P4TypeReference, direction: Direction) =
+    ParamDelegate(params, type.typeRef, direction)
+
+  fun <T : StructRef> param(factory: (P4Expr) -> T, direction: Direction) =
+    TypedParamDelegate(params, factory, direction)
+
+  fun externInstance(extern: P4Extern) = ExternInstanceDelegate(declarations, extern.name)
+
+  fun externInstance(extern: P4TypeReference) =
+    ExternInstanceDelegate(declarations, extern.typeRef.name)
+
+  fun state(block: StateBuilder.() -> Unit) = StateDeclDelegate(deferredStates, block)
+
+  fun build(name: String): P4Parser {
+    val states =
+      deferredStates.map { (stateName, block) ->
+        val builder = StateBuilder()
+        builder.block()
+        builder.build(stateName)
+      }
+    return P4Parser(name, params, declarations, states)
+  }
+}
+
 // Factory functions
 
 fun p4Action(name: String, block: ActionBuilder.() -> Unit): P4Action {
@@ -374,6 +444,16 @@ class ProgramBuilder {
   fun errors(vararg members: String) {
     declarations.add(P4Error(members.toList()))
   }
+
+  fun parser(block: ParserBuilder.() -> Unit) =
+    DeclDelegate<P4Parser>(
+      factory = { name ->
+        val builder = ParserBuilder()
+        builder.block()
+        builder.build(name)
+      },
+      register = { declarations.add(it) },
+    )
 
   fun extern(block: ExternBuilder.() -> Unit) =
     DeclDelegate<P4Extern>(

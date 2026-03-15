@@ -143,4 +143,13 @@ data class P4Extern(val name: String, val methods: List<P4ExternMethod>) :
 
 data class P4ExternInstance(val typeName: String, val name: String) : P4Declaration
 
+data class P4ParserState(val name: String, val body: List<P4Statement>)
+
+data class P4Parser(
+  val name: String,
+  val params: List<P4Param>,
+  val declarations: List<P4Declaration>,
+  val states: List<P4ParserState>,
+) : P4Declaration
+
 data class P4Program(val declarations: List<P4Declaration>)
