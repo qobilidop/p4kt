@@ -26,11 +26,24 @@ data class P4Field(val name: String, val type: P4Type)
 
 sealed interface P4Declaration
 
-data class P4Typedef(val name: String, val type: P4Type) : P4Declaration
+sealed interface P4TypeReference {
+  val typeRef: P4Type.Named
+}
 
-data class P4Header(val name: String, val fields: List<P4Field>) : P4Declaration
+data class P4Typedef(val name: String, val type: P4Type) : P4Declaration, P4TypeReference {
+  override val typeRef
+    get() = P4Type.Named(name)
+}
 
-data class P4Struct(val name: String, val fields: List<P4Field>) : P4Declaration
+data class P4Header(val name: String, val fields: List<P4Field>) : P4Declaration, P4TypeReference {
+  override val typeRef
+    get() = P4Type.Named(name)
+}
+
+data class P4Struct(val name: String, val fields: List<P4Field>) : P4Declaration, P4TypeReference {
+  override val typeRef
+    get() = P4Type.Named(name)
+}
 
 data class P4Function(
   val name: String,

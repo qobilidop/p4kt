@@ -41,6 +41,10 @@ class FieldsBuilder {
     fields.add(P4Field(name, type))
   }
 
+  fun field(name: String, type: P4TypeReference) {
+    fields.add(P4Field(name, type.typeRef))
+  }
+
   fun build() = fields.toList()
 }
 
@@ -62,32 +66,46 @@ fun p4Function(name: String, returnType: P4Type, block: FunctionBuilder.() -> Un
   return builder.build()
 }
 
+class DeclDelegate<T : P4Declaration>(
+  private val factory: (String) -> T,
+  private val register: (T) -> Unit,
+) {
+  operator fun provideDelegate(
+    thisRef: Any?,
+    property: kotlin.reflect.KProperty<*>,
+  ): ReadOnlyProperty<Any?, T> {
+    val decl = factory(property.name)
+    register(decl)
+    return ReadOnlyProperty { _, _ -> decl }
+  }
+}
+
 class ProgramBuilder {
   private val declarations = mutableListOf<P4Declaration>()
 
-  fun typedef(name: String, type: P4Type): P4Typedef {
-    val decl = p4Typedef(name, type)
-    declarations.add(decl)
-    return decl
-  }
+  fun typedef(type: P4Type) =
+    DeclDelegate<P4Typedef>(
+      factory = { name -> p4Typedef(name, type) },
+      register = { declarations.add(it) },
+    )
 
-  fun header(name: String, block: FieldsBuilder.() -> Unit): P4Header {
-    val decl = p4Header(name, block)
-    declarations.add(decl)
-    return decl
-  }
+  fun header(block: FieldsBuilder.() -> Unit) =
+    DeclDelegate<P4Header>(
+      factory = { name -> p4Header(name, block) },
+      register = { declarations.add(it) },
+    )
 
-  fun struct(name: String, block: FieldsBuilder.() -> Unit): P4Struct {
-    val decl = p4Struct(name, block)
-    declarations.add(decl)
-    return decl
-  }
+  fun struct(block: FieldsBuilder.() -> Unit) =
+    DeclDelegate<P4Struct>(
+      factory = { name -> p4Struct(name, block) },
+      register = { declarations.add(it) },
+    )
 
-  fun function(name: String, returnType: P4Type, block: FunctionBuilder.() -> Unit): P4Function {
-    val decl = p4Function(name, returnType, block)
-    declarations.add(decl)
-    return decl
-  }
+  fun function(returnType: P4Type, block: FunctionBuilder.() -> Unit) =
+    DeclDelegate<P4Function>(
+      factory = { name -> p4Function(name, returnType, block) },
+      register = { declarations.add(it) },
+    )
 
   fun build() = P4Program(declarations.toList())
 }

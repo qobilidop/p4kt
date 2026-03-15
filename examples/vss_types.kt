@@ -6,14 +6,14 @@ import p4kt.*
 
 fun main() {
   val program = p4Program {
-    typedef("EthernetAddress", bit(48))
-    typedef("IPv4Address", bit(32))
-    header("Ethernet_h") {
-      field("dstAddr", typeName("EthernetAddress"))
-      field("srcAddr", typeName("EthernetAddress"))
+    val EthernetAddress by typedef(bit(48))
+    val IPv4Address by typedef(bit(32))
+    val Ethernet_h by header {
+      field("dstAddr", EthernetAddress)
+      field("srcAddr", EthernetAddress)
       field("etherType", bit(16))
     }
-    header("Ipv4_h") {
+    val Ipv4_h by header {
       field("version", bit(4))
       field("ihl", bit(4))
       field("diffserv", bit(8))
@@ -24,12 +24,12 @@ fun main() {
       field("ttl", bit(8))
       field("protocol", bit(8))
       field("hdrChecksum", bit(16))
-      field("srcAddr", typeName("IPv4Address"))
-      field("dstAddr", typeName("IPv4Address"))
+      field("srcAddr", IPv4Address)
+      field("dstAddr", IPv4Address)
     }
-    struct("Parsed_packet") {
-      field("ethernet", typeName("Ethernet_h"))
-      field("ip", typeName("Ipv4_h"))
+    val Parsed_packet by struct {
+      field("ethernet", Ethernet_h)
+      field("ip", Ipv4_h)
     }
   }
   println(program.toP4())
