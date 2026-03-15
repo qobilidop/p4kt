@@ -11,5 +11,8 @@ golden_test(name = "vss_arch")
 
 golden_test(
     name = "vss_example",
-    extra_deps = [":vss_arch_lib"],
+    extra_deps = [
+        ":vss_arch_lib",
+        "//p4kt/p4include",
+    ],
 )

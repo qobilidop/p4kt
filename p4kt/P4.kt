@@ -227,6 +227,10 @@ object P4 {
       return ext
     }
 
+    protected fun errors(vararg members: String) {
+      declarations.add(P4Error(members.toList()))
+    }
+
     fun toP4() = P4Program(declarations).toP4()
   }
 

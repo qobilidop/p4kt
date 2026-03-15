@@ -179,6 +179,27 @@ class P4ProgramTest {
   }
 
   @Test
+  fun libraryErrors() {
+    val lib =
+      object : P4.Library() {
+        init {
+          errors("NoError", "PacketTooShort")
+        }
+      }
+
+    assertEquals(
+      """
+            error {
+                NoError,
+                PacketTooShort
+            }
+      """
+        .trimIndent(),
+      lib.toP4(),
+    )
+  }
+
+  @Test
   fun packageInstantiation() {
     val pkg = P4PackageInstance("VSS", listOf("TopParser", "TopPipe", "TopDeparser"), "main")
     assertEquals("VSS(TopParser(), TopPipe(), TopDeparser()) main;", pkg.toP4())

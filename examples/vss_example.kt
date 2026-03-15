@@ -3,6 +3,7 @@ package p4kt.examples
 import p4kt.P4
 import p4kt.P4Expr
 import p4kt.p4Program
+import p4kt.p4include.Core
 
 // Corresponds to:
 // https://github.com/p4lang/p4c/blob/main/testdata/p4_16_samples/vss-example.p4
@@ -44,7 +45,7 @@ val vss_example = p4Program {
 
   @Suppress("UnusedPrivateProperty")
   val TopParser by parser {
-    val b by param(P4.packet_in)
+    val b by param(Core.packet_in)
     val p by param(::Parsed_packet, P4.OUT)
     val ck by externInstance(vss_arch.Ck16)
 
@@ -145,7 +146,7 @@ val vss_example = p4Program {
   @Suppress("UnusedPrivateProperty")
   val TopDeparser by control {
     val p by param(::Parsed_packet, P4.INOUT)
-    val b by param(P4.packet_out)
+    val b by param(Core.packet_out)
     val ck by externInstance(vss_arch.Ck16)
 
     apply {

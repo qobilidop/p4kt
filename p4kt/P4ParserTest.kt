@@ -107,6 +107,22 @@ class P4ParserTest {
   }
 
   @Test
+  fun paramAcceptsTypeReference() {
+    val externType = P4Extern("packet_in", emptyList())
+
+    val program = p4Program {
+      @Suppress("UnusedPrivateProperty")
+      val TopParser by parser {
+        val b by param(externType)
+
+        @Suppress("UnusedPrivateProperty") val start by state { transition(P4.accept) }
+      }
+    }
+
+    assertTrue(program.toP4().contains("packet_in b"))
+  }
+
+  @Test
   fun parserReordersStartStateFirst() {
     val parser =
       P4Parser(

@@ -378,6 +378,8 @@ class ControlBuilder : StatementBuilder() {
 
   fun param(type: P4Type) = ParamDelegate(params, type)
 
+  fun param(type: P4TypeReference) = ParamDelegate(params, type.typeRef)
+
   fun param(type: P4Type, direction: Direction) = ParamDelegate(params, type, direction)
 
   fun param(type: P4TypeReference, direction: Direction) =
@@ -451,6 +453,8 @@ class ParserBuilder {
   private val deferredStates = mutableListOf<Pair<String, StateBuilder.() -> Unit>>()
 
   fun param(type: P4Type) = ParamDelegate(params, type)
+
+  fun param(type: P4TypeReference) = ParamDelegate(params, type.typeRef)
 
   fun param(type: P4Type, direction: Direction) = ParamDelegate(params, type, direction)
 
