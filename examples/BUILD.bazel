@@ -6,4 +6,6 @@ golden_test(name = "max")
 
 golden_test(name = "ttl_decrement")
 
+golden_test(name = "vss_actions")
+
 golden_test(name = "vss_types")

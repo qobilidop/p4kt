@@ -77,16 +77,7 @@ class FunctionBuilder(private val name: String, private val returnType: P4Type) 
   StatementBuilder() {
   private val params = mutableListOf<P4Param>()
 
-  fun param(type: P4Type, direction: Direction): ReadOnlyProperty<Any?, P4Expr.Ref> {
-    var registered = false
-    return ReadOnlyProperty { _, property ->
-      if (!registered) {
-        params.add(P4Param(property.name, type, direction))
-        registered = true
-      }
-      P4Expr.Ref(property.name)
-    }
-  }
+  fun param(type: P4Type, direction: Direction) = ParamDelegate(params, type, direction)
 
   fun build() = P4Function(name, returnType, params, body)
 }
@@ -137,30 +128,26 @@ fun p4Struct(name: String, block: FieldsBuilder.() -> Unit): P4Struct {
   return P4Struct(name, builder.build())
 }
 
+class ParamDelegate(
+  private val params: MutableList<P4Param>,
+  private val type: P4Type,
+  private val direction: Direction? = null,
+) {
+  operator fun provideDelegate(
+    thisRef: Any?,
+    property: kotlin.reflect.KProperty<*>,
+  ): ReadOnlyProperty<Any?, P4Expr.Ref> {
+    params.add(P4Param(property.name, type, direction))
+    return ReadOnlyProperty { _, _ -> P4Expr.Ref(property.name) }
+  }
+}
+
 class ActionBuilder : StatementBuilder() {
   private val params = mutableListOf<P4Param>()
 
-  fun param(type: P4Type): ReadOnlyProperty<Any?, P4Expr.Ref> {
-    var registered = false
-    return ReadOnlyProperty { _, property ->
-      if (!registered) {
-        params.add(P4Param(property.name, type))
-        registered = true
-      }
-      P4Expr.Ref(property.name)
-    }
-  }
+  fun param(type: P4Type) = ParamDelegate(params, type)
 
-  fun param(type: P4Type, direction: Direction): ReadOnlyProperty<Any?, P4Expr.Ref> {
-    var registered = false
-    return ReadOnlyProperty { _, property ->
-      if (!registered) {
-        params.add(P4Param(property.name, type, direction))
-        registered = true
-      }
-      P4Expr.Ref(property.name)
-    }
-  }
+  fun param(type: P4Type, direction: Direction) = ParamDelegate(params, type, direction)
 
   fun build(name: String) = P4Action(name, params, body)
 }
