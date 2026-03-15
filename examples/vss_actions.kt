@@ -5,37 +5,42 @@ import p4kt.*
 fun main() {
   val program = p4Program {
     val PortId by typedef(bit(4))
-    val IPv4Address by typedef(bit(32))
+    @Suppress("UNUSED_VARIABLE") val IPv4Address by typedef(bit(32))
 
-    val DROP_PORT by const_(PortId.typeRef, lit(4, 0xF))
+    val DROP_PORT by const_(PortId, lit(4, 0xF))
 
-    val Ethernet_h by header {
-      field("dstAddr", bit(48))
-      field("srcAddr", bit(48))
-      field("etherType", bit(16))
+    class Ethernet_h(base: P4Expr) : HeaderRef(base) {
+      val dstAddr by field(bit(48))
+      val srcAddr by field(bit(48))
+      val etherType by field(bit(16))
     }
+    header<Ethernet_h>()
 
-    val Ipv4_h by header {
-      field("ttl", bit(8))
-      field("srcAddr", IPv4Address)
-      field("dstAddr", IPv4Address)
+    class Ipv4_h(base: P4Expr) : HeaderRef(base) {
+      val ttl by field(bit(8))
+      val srcAddr by field(typeName("IPv4Address"))
+      val dstAddr by field(typeName("IPv4Address"))
     }
+    header<Ipv4_h>()
 
-    val OutControl by struct { field("outputPort", PortId) }
+    class OutControl(base: P4Expr) : StructRef(base) {
+      val outputPort by field(typeName("PortId"))
+    }
+    struct<OutControl>()
 
     val Drop_action by action {
-      val outCtrl by param(typeName("OutControl"), INOUT)
-      assign(outCtrl.dot("outputPort"), DROP_PORT)
+      val outCtrl by param<OutControl>(INOUT)
+      assign(outCtrl.outputPort, DROP_PORT)
     }
 
     val Set_nhop by action {
-      val ipv4_dest by param(IPv4Address.typeRef)
-      val port by param(PortId.typeRef)
-      val headers_ip by param(typeName("Ipv4_h"), INOUT)
-      val outCtrl by param(typeName("OutControl"), INOUT)
-      assign(P4Expr.Ref("nextHop"), ipv4_dest)
-      assign(headers_ip.dot("ttl"), headers_ip.dot("ttl") - lit(1))
-      assign(outCtrl.dot("outputPort"), port)
+      val ipv4_dest by param(typeName("IPv4Address"))
+      val port by param(typeName("PortId"))
+      val headers_ip by param<Ipv4_h>(INOUT)
+      val outCtrl by param<OutControl>(INOUT)
+      assign(ref("nextHop"), ipv4_dest)
+      assign(headers_ip.ttl, headers_ip.ttl - lit(1))
+      assign(outCtrl.outputPort, port)
     }
   }
   println(program.toP4())

@@ -37,13 +37,16 @@ class P4ExpressionTest {
   @Test
   fun fieldAccess() {
     val headers = P4Expr.Ref("headers")
-    assertEquals("headers.ip", headers.dot("ip").toP4())
+    assertEquals("headers.ip", P4Expr.FieldAccess(headers, "ip").toP4())
   }
 
   @Test
   fun chainedFieldAccess() {
     val headers = P4Expr.Ref("headers")
-    assertEquals("headers.ip.ttl", headers.dot("ip").dot("ttl").toP4())
+    assertEquals(
+      "headers.ip.ttl",
+      P4Expr.FieldAccess(P4Expr.FieldAccess(headers, "ip"), "ttl").toP4(),
+    )
   }
 
   @Test
@@ -70,7 +73,7 @@ class P4ExpressionTest {
   @Test
   fun nestedExpression() {
     val headers = P4Expr.Ref("headers")
-    val ttl = headers.dot("ip").dot("ttl")
+    val ttl = P4Expr.FieldAccess(P4Expr.FieldAccess(headers, "ip"), "ttl")
     assertEquals("(headers.ip.ttl - 1)", (ttl - lit(1)).toP4())
   }
 }

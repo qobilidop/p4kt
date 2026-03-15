@@ -1,6 +1,12 @@
 package p4kt
 
 import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KClass
+
+@PublishedApi
+internal fun <T : StructRef> createStructRef(clazz: KClass<T>, base: P4Expr): T {
+  return clazz.constructors.first().call(base)
+}
 
 val IN = Direction.IN
 val OUT = Direction.OUT
@@ -20,8 +26,6 @@ fun lit(value: Int) = P4Expr.Lit(value.toLong())
 fun lit(width: Int, value: Long) = P4Expr.TypedLit(width, value)
 
 fun lit(width: Int, value: Int) = P4Expr.TypedLit(width, value.toLong())
-
-fun P4Expr.dot(field: String) = P4Expr.FieldAccess(this, field)
 
 operator fun P4Expr.minus(other: P4Expr) = P4Expr.BinOp(BinOpKind.SUB, this, other)
 
@@ -85,7 +89,7 @@ class TypedParamDelegate<T : StructRef>(
     property: kotlin.reflect.KProperty<*>,
   ): ReadOnlyProperty<Any?, T> {
     params.add(P4Param(property.name, P4Type.Named(clazz.simpleName!!), direction))
-    val instance = clazz.constructors.first().call(P4Expr.Ref(property.name))
+    val instance = createStructRef(clazz, P4Expr.Ref(property.name))
     return ReadOnlyProperty { _, _ -> instance }
   }
 }
@@ -271,13 +275,13 @@ class ProgramBuilder {
     )
 
   inline fun <reified T : StructRef> struct() {
-    val dummy = T::class.constructors.first().call(P4Expr.Ref(""))
+    val dummy = createStructRef(T::class, P4Expr.Ref(""))
     val name = T::class.simpleName!!
     declarations.add(P4Struct(name, dummy.fields.toList()))
   }
 
   inline fun <reified T : HeaderRef> header() {
-    val dummy = T::class.constructors.first().call(P4Expr.Ref(""))
+    val dummy = createStructRef(T::class, P4Expr.Ref(""))
     val name = T::class.simpleName!!
     declarations.add(P4Header(name, dummy.fields.toList()))
   }

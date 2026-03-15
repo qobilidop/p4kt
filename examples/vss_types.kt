@@ -4,31 +4,37 @@ import p4kt.*
 
 fun main() {
   val program = p4Program {
-    val EthernetAddress by typedef(bit(48))
-    val IPv4Address by typedef(bit(32))
-    val Ethernet_h by header {
-      field("dstAddr", EthernetAddress)
-      field("srcAddr", EthernetAddress)
-      field("etherType", bit(16))
+    @Suppress("UNUSED_VARIABLE") val EthernetAddress by typedef(bit(48))
+    @Suppress("UNUSED_VARIABLE") val IPv4Address by typedef(bit(32))
+
+    class Ethernet_h(base: P4Expr) : HeaderRef(base) {
+      val dstAddr by field(typeName("EthernetAddress"))
+      val srcAddr by field(typeName("EthernetAddress"))
+      val etherType by field(bit(16))
     }
-    val Ipv4_h by header {
-      field("version", bit(4))
-      field("ihl", bit(4))
-      field("diffserv", bit(8))
-      field("totalLen", bit(16))
-      field("identification", bit(16))
-      field("flags", bit(3))
-      field("fragOffset", bit(13))
-      field("ttl", bit(8))
-      field("protocol", bit(8))
-      field("hdrChecksum", bit(16))
-      field("srcAddr", IPv4Address)
-      field("dstAddr", IPv4Address)
+    header<Ethernet_h>()
+
+    class Ipv4_h(base: P4Expr) : HeaderRef(base) {
+      val version by field(bit(4))
+      val ihl by field(bit(4))
+      val diffserv by field(bit(8))
+      val totalLen by field(bit(16))
+      val identification by field(bit(16))
+      val flags by field(bit(3))
+      val fragOffset by field(bit(13))
+      val ttl by field(bit(8))
+      val protocol by field(bit(8))
+      val hdrChecksum by field(bit(16))
+      val srcAddr by field(typeName("IPv4Address"))
+      val dstAddr by field(typeName("IPv4Address"))
     }
-    val Parsed_packet by struct {
-      field("ethernet", Ethernet_h)
-      field("ip", Ipv4_h)
+    header<Ipv4_h>()
+
+    class Parsed_packet(base: P4Expr) : StructRef(base) {
+      val ethernet by field(typeName("Ethernet_h"))
+      val ip by field(typeName("Ipv4_h"))
     }
+    struct<Parsed_packet>()
   }
   println(program.toP4())
 }

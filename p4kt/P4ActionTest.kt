@@ -23,12 +23,12 @@ class P4ActionTest {
       p4Action("Set_nhop") {
         val ipv4_dest by param(typeName("IPv4Address"))
         val port by param(typeName("PortId"))
-        assign(P4Expr.Ref("nextHop"), ipv4_dest)
+        assign(ref("nextHop"), ipv4_dest)
         assign(
-          P4Expr.Ref("headers").dot("ip").dot("ttl"),
-          P4Expr.Ref("headers").dot("ip").dot("ttl") - lit(1),
+          P4Expr.FieldAccess(P4Expr.FieldAccess(ref("headers"), "ip"), "ttl"),
+          P4Expr.FieldAccess(P4Expr.FieldAccess(ref("headers"), "ip"), "ttl") - lit(1),
         )
-        assign(P4Expr.Ref("outCtrl").dot("outputPort"), port)
+        assign(P4Expr.FieldAccess(ref("outCtrl"), "outputPort"), port)
       }
 
     assertEquals(
