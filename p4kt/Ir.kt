@@ -131,4 +131,16 @@ data class P4Control(
 
 data class P4LocalVar(val name: String, val type: P4Type) : P4Declaration
 
+data class P4Error(val members: List<String>) : P4Declaration
+
+data class P4ExternMethod(val name: String, val returnType: P4Type, val params: List<P4Param>)
+
+data class P4Extern(val name: String, val methods: List<P4ExternMethod>) :
+  P4Declaration, P4TypeReference {
+  override val typeRef
+    get() = P4Type.Named(name)
+}
+
+data class P4ExternInstance(val typeName: String, val name: String) : P4Declaration
+
 data class P4Program(val declarations: List<P4Declaration>)

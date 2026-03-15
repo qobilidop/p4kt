@@ -102,6 +102,19 @@ class TableDeclDelegate(
   }
 }
 
+class ExternInstanceDelegate(
+  private val declarations: MutableList<P4Declaration>,
+  private val typeName: String,
+) {
+  operator fun provideDelegate(
+    thisRef: Any?,
+    property: kotlin.reflect.KProperty<*>,
+  ): ReadOnlyProperty<Any?, P4Expr.Ref> {
+    declarations.add(P4ExternInstance(typeName, property.name))
+    return ReadOnlyProperty { _, _ -> P4Expr.Ref(property.name) }
+  }
+}
+
 // Declaration builders
 
 class FieldsBuilder {
@@ -183,6 +196,36 @@ class TableBuilder {
   fun build(name: String) = P4Table(name, keys, actions, size, defaultAction, isDefaultActionConst)
 }
 
+class ExternMethodBuilder {
+  private val params = mutableListOf<P4Param>()
+
+  fun param(type: P4Type, direction: Direction) = ParamDelegate(params, type, direction)
+
+  fun param(type: P4Type) = ParamDelegate(params, type)
+
+  fun params() = params.toList()
+}
+
+class ExternBuilder(private val name: String) {
+  private val methods = mutableListOf<P4ExternMethod>()
+
+  fun constructor_() {
+    methods.add(P4ExternMethod(name, P4Type.Void, emptyList()))
+  }
+
+  fun method(name: String, returnType: P4Type) {
+    methods.add(P4ExternMethod(name, returnType, emptyList()))
+  }
+
+  fun method(name: String, returnType: P4Type, block: ExternMethodBuilder.() -> Unit) {
+    val builder = ExternMethodBuilder()
+    builder.block()
+    methods.add(P4ExternMethod(name, returnType, builder.params()))
+  }
+
+  fun build() = P4Extern(name, methods)
+}
+
 class ControlBuilder : StatementBuilder() {
   private val params = mutableListOf<P4Param>()
   private val declarations = mutableListOf<P4Declaration>()
@@ -205,6 +248,11 @@ class ControlBuilder : StatementBuilder() {
 
   fun varDecl(type: P4TypeReference): ControlVarDeclDelegate =
     ControlVarDeclDelegate(declarations, type.typeRef)
+
+  fun externInstance(extern: P4Extern) = ExternInstanceDelegate(declarations, extern.name)
+
+  fun externInstance(extern: P4TypeReference) =
+    ExternInstanceDelegate(declarations, extern.typeRef.name)
 
   fun table(block: TableBuilder.() -> Unit) =
     TableDeclDelegate(
@@ -320,6 +368,20 @@ class ProgramBuilder {
   fun function(returnType: P4Type, block: FunctionBuilder.() -> Unit) =
     DeclDelegate<P4Function>(
       factory = { name -> p4Function(name, returnType, block) },
+      register = { declarations.add(it) },
+    )
+
+  fun errors(vararg members: String) {
+    declarations.add(P4Error(members.toList()))
+  }
+
+  fun extern(block: ExternBuilder.() -> Unit) =
+    DeclDelegate<P4Extern>(
+      factory = { name ->
+        val builder = ExternBuilder(name)
+        builder.block()
+        builder.build()
+      },
       register = { declarations.add(it) },
     )
 

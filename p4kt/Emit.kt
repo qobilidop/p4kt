@@ -149,6 +149,27 @@ fun P4Control.toP4(): String {
   return "control $name($paramStr) {\n${innerParts.joinToString("\n")}\n}"
 }
 
+fun P4Error.toP4(): String {
+  val membersStr = members.joinToString(",\n") { "    $it" }
+  return "error {\n$membersStr\n}"
+}
+
+fun P4ExternMethod.toP4(externName: String): String {
+  val paramStr = params.joinToString(", ") { it.toP4() }
+  return if (name == externName) {
+    "$name($paramStr);"
+  } else {
+    "${returnType.toP4()} $name($paramStr);"
+  }
+}
+
+fun P4Extern.toP4(): String {
+  val methodsStr = methods.joinToString("\n") { "    ${it.toP4(name)}" }
+  return "extern $name {\n$methodsStr\n}"
+}
+
+fun P4ExternInstance.toP4(): String = "$typeName() $name;"
+
 fun P4Declaration.toP4(): String =
   when (this) {
     is P4Function -> (this as P4Function).toP4()
@@ -160,6 +181,9 @@ fun P4Declaration.toP4(): String =
     is P4Table -> (this as P4Table).toP4()
     is P4Control -> (this as P4Control).toP4()
     is P4LocalVar -> (this as P4LocalVar).toP4()
+    is P4Error -> (this as P4Error).toP4()
+    is P4Extern -> (this as P4Extern).toP4()
+    is P4ExternInstance -> (this as P4ExternInstance).toP4()
   }
 
 fun P4Program.toP4(): String = declarations.joinToString("\n\n") { it.toP4() }
