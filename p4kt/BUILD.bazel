@@ -67,6 +67,17 @@ kt_jvm_test(
 )
 
 kt_jvm_test(
+    name = "P4ExpressionTest",
+    srcs = ["P4ExpressionTest.kt"],
+    test_class = "p4kt.P4ExpressionTest",
+    deps = [
+        ":p4kt",
+        "@maven//:org_jetbrains_kotlin_kotlin_test",
+        "@maven//:org_jetbrains_kotlin_kotlin_test_junit",
+    ],
+)
+
+kt_jvm_test(
     name = "P4ProgramTest",
     srcs = ["P4ProgramTest.kt"],
     test_class = "p4kt.P4ProgramTest",

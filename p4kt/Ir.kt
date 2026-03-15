@@ -4,6 +4,10 @@ sealed class P4Type {
   data class Bit(val width: Int) : P4Type()
 
   data class Named(val name: String) : P4Type()
+
+  data object Bool : P4Type()
+
+  data object Void : P4Type()
 }
 
 enum class Direction {
@@ -16,6 +20,20 @@ data class P4Param(val name: String, val type: P4Type, val direction: Direction)
 
 sealed class P4Expr {
   data class Ref(val name: String) : P4Expr()
+
+  data class Lit(val value: Long) : P4Expr()
+
+  data class TypedLit(val width: Int, val value: Long) : P4Expr()
+
+  data class FieldAccess(val expr: P4Expr, val field: String) : P4Expr()
+
+  data class BinOp(val op: BinOpKind, val left: P4Expr, val right: P4Expr) : P4Expr()
+}
+
+enum class BinOpKind {
+  SUB,
+  EQ,
+  NE,
 }
 
 sealed class P4Statement {

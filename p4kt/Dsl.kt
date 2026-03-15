@@ -8,6 +8,25 @@ val INOUT = Direction.INOUT
 
 fun bit(width: Int) = P4Type.Bit(width)
 
+val bool_ = P4Type.Bool
+val void_ = P4Type.Void
+
+fun lit(value: Long) = P4Expr.Lit(value)
+
+fun lit(value: Int) = P4Expr.Lit(value.toLong())
+
+fun lit(width: Int, value: Long) = P4Expr.TypedLit(width, value)
+
+fun lit(width: Int, value: Int) = P4Expr.TypedLit(width, value.toLong())
+
+fun P4Expr.dot(field: String) = P4Expr.FieldAccess(this, field)
+
+operator fun P4Expr.minus(other: P4Expr) = P4Expr.BinOp(BinOpKind.SUB, this, other)
+
+infix fun P4Expr.eq(other: P4Expr) = P4Expr.BinOp(BinOpKind.EQ, this, other)
+
+infix fun P4Expr.ne(other: P4Expr) = P4Expr.BinOp(BinOpKind.NE, this, other)
+
 class FunctionBuilder(private val name: String, private val returnType: P4Type) {
   private val params = mutableListOf<P4Param>()
   private val body = mutableListOf<P4Statement>()
