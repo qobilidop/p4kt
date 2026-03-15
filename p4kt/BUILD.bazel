@@ -9,6 +9,9 @@ kt_jvm_library(
         "P4kt.kt",
     ],
     visibility = ["//visibility:public"],
+    deps = [
+        "@maven//:org_jetbrains_kotlin_kotlin_reflect",
+    ],
 )
 
 kt_jvm_test(

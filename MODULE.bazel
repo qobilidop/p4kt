@@ -10,6 +10,7 @@ bazel_dep(name = "rules_jvm_external", version = "6.10")
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
     artifacts = [
+        "org.jetbrains.kotlin:kotlin-reflect:2.1.10",
         "org.jetbrains.kotlin:kotlin-test:2.1.10",
         "org.jetbrains.kotlin:kotlin-test-junit:2.1.10",
     ],
