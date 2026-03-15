@@ -98,3 +98,25 @@ kt_jvm_test(
         "@maven//:org_jetbrains_kotlin_kotlin_test_junit",
     ],
 )
+
+kt_jvm_test(
+    name = "P4ConstTest",
+    srcs = ["P4ConstTest.kt"],
+    test_class = "p4kt.P4ConstTest",
+    deps = [
+        ":p4kt",
+        "@maven//:org_jetbrains_kotlin_kotlin_test",
+        "@maven//:org_jetbrains_kotlin_kotlin_test_junit",
+    ],
+)
+
+kt_jvm_test(
+    name = "P4ActionTest",
+    srcs = ["P4ActionTest.kt"],
+    test_class = "p4kt.P4ActionTest",
+    deps = [
+        ":p4kt",
+        "@maven//:org_jetbrains_kotlin_kotlin_test",
+        "@maven//:org_jetbrains_kotlin_kotlin_test_junit",
+    ],
+)

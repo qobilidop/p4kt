@@ -16,7 +16,7 @@ enum class Direction {
   INOUT,
 }
 
-data class P4Param(val name: String, val type: P4Type, val direction: Direction)
+data class P4Param(val name: String, val type: P4Type, val direction: Direction? = null)
 
 sealed class P4Expr {
   data class Ref(val name: String) : P4Expr()
@@ -79,5 +79,10 @@ data class P4Function(
   val params: List<P4Param>,
   val body: List<P4Statement>,
 ) : P4Declaration
+
+data class P4Const(val name: String, val type: P4Type, val value: P4Expr) : P4Declaration
+
+data class P4Action(val name: String, val params: List<P4Param>, val body: List<P4Statement>) :
+  P4Declaration
 
 data class P4Program(val declarations: List<P4Declaration>)

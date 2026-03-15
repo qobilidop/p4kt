@@ -15,7 +15,12 @@ fun Direction.toP4(): String =
     Direction.INOUT -> "inout"
   }
 
-fun P4Param.toP4(): String = "${direction.toP4()} ${type.toP4()} $name"
+fun P4Param.toP4(): String =
+  if (direction != null) {
+    "${direction.toP4()} ${type.toP4()} $name"
+  } else {
+    "${type.toP4()} $name"
+  }
 
 fun P4Expr.toP4(): String =
   when (this) {
@@ -77,12 +82,26 @@ fun P4Function.toP4(): String {
   return "function ${returnType.toP4()} $name($paramStr) {\n$bodyStr\n}"
 }
 
+fun P4Const.toP4(): String = "const ${type.toP4()} $name = ${value.toP4()};"
+
+fun P4Action.toP4(): String {
+  val paramStr = params.joinToString(", ") { it.toP4() }
+  return if (body.isEmpty()) {
+    "action $name($paramStr) {\n}"
+  } else {
+    val bodyStr = indentBlock(body, "    ")
+    "action $name($paramStr) {\n$bodyStr\n}"
+  }
+}
+
 fun P4Declaration.toP4(): String =
   when (this) {
     is P4Function -> (this as P4Function).toP4()
     is P4Typedef -> (this as P4Typedef).toP4()
     is P4Header -> (this as P4Header).toP4()
     is P4Struct -> (this as P4Struct).toP4()
+    is P4Const -> (this as P4Const).toP4()
+    is P4Action -> (this as P4Action).toP4()
   }
 
 fun P4Program.toP4(): String = declarations.joinToString("\n\n") { it.toP4() }

@@ -93,6 +93,22 @@ class FunctionBuilder(private val name: String, private val returnType: P4Type) 
 
 fun typeName(name: String) = P4Type.Named(name)
 
+class ConstDelegate(
+  private val type: P4Type,
+  private val value: P4Expr,
+  private val register: (P4Const) -> Unit,
+) {
+  operator fun provideDelegate(
+    thisRef: Any?,
+    property: kotlin.reflect.KProperty<*>,
+  ): ReadOnlyProperty<Any?, P4Expr.Ref> {
+    register(P4Const(property.name, type, value))
+    return ReadOnlyProperty { _, _ -> P4Expr.Ref(property.name) }
+  }
+}
+
+fun p4Const(name: String, type: P4Type, value: P4Expr) = P4Const(name, type, value)
+
 fun p4Typedef(name: String, type: P4Type) = P4Typedef(name, type)
 
 class FieldsBuilder {
@@ -119,6 +135,40 @@ fun p4Struct(name: String, block: FieldsBuilder.() -> Unit): P4Struct {
   val builder = FieldsBuilder()
   builder.block()
   return P4Struct(name, builder.build())
+}
+
+class ActionBuilder : StatementBuilder() {
+  private val params = mutableListOf<P4Param>()
+
+  fun param(type: P4Type): ReadOnlyProperty<Any?, P4Expr.Ref> {
+    var registered = false
+    return ReadOnlyProperty { _, property ->
+      if (!registered) {
+        params.add(P4Param(property.name, type))
+        registered = true
+      }
+      P4Expr.Ref(property.name)
+    }
+  }
+
+  fun param(type: P4Type, direction: Direction): ReadOnlyProperty<Any?, P4Expr.Ref> {
+    var registered = false
+    return ReadOnlyProperty { _, property ->
+      if (!registered) {
+        params.add(P4Param(property.name, type, direction))
+        registered = true
+      }
+      P4Expr.Ref(property.name)
+    }
+  }
+
+  fun build(name: String) = P4Action(name, params, body)
+}
+
+fun p4Action(name: String, block: ActionBuilder.() -> Unit): P4Action {
+  val builder = ActionBuilder()
+  builder.block()
+  return builder.build(name)
 }
 
 fun p4Function(name: String, returnType: P4Type, block: FunctionBuilder.() -> Unit): P4Function {
@@ -159,6 +209,14 @@ class ProgramBuilder {
   fun struct(block: FieldsBuilder.() -> Unit) =
     DeclDelegate<P4Struct>(
       factory = { name -> p4Struct(name, block) },
+      register = { declarations.add(it) },
+    )
+
+  fun const_(type: P4Type, value: P4Expr) = ConstDelegate(type, value) { declarations.add(it) }
+
+  fun action(block: ActionBuilder.() -> Unit) =
+    DeclDelegate<P4Action>(
+      factory = { name -> p4Action(name, block) },
       register = { declarations.add(it) },
     )
 
