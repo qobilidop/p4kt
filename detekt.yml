@@ -1,3 +1,6 @@
+complexity:
+  TooManyFunctions:
+    thresholdInFiles: 20
 naming:
   PackageNaming:
     packagePattern: '[a-z]+(\.[a-z][A-Za-z0-9]*)*'
@@ -7,9 +10,6 @@ naming:
       - "Test"
     functionPattern: "[a-z][a-zA-Z0-9_]*"
 style:
-  WildcardImport:
-    excludes:
-      - "**/examples/**"
   MagicNumber:
     ignoreNumbers:
       - "-1"

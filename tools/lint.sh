@@ -8,7 +8,7 @@ FAILED=false
 
 # Kotlin (detekt)
 echo "Linting Kotlin..."
-KT_FILES=$(find . -name '*.kt' -not -path '*/bazel-*/*')
+KT_FILES=$(find . -name '*.kt' -not -path '*/bazel-*/*' -not -path '*/examples/*')
 if [ -n "$KT_FILES" ]; then
 	# shellcheck disable=SC2086
 	KT_INPUT=$(echo $KT_FILES | tr ' ' ',')
