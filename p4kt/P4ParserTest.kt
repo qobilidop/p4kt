@@ -139,6 +139,7 @@ class P4ParserTest {
     val program = p4Program {
       struct(::Parsed_packet)
 
+      @Suppress("UnusedPrivateProperty")
       val TopParser by parser {
         val b by param(packet_in)
         val p by param(::Parsed_packet, OUT)
@@ -148,6 +149,7 @@ class P4ParserTest {
           transition(accept)
         }
 
+        @Suppress("UnusedPrivateProperty")
         val start by state {
           call(b, "extract", p.ethernet.expr)
           select(p.ethernet.etherType) { lit(0x0800) to parse_ipv4 }

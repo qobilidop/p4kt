@@ -203,6 +203,7 @@ fun P4Parser.toP4(): String {
   return "parser $name($paramStr) {\n${innerParts.joinToString("\n")}\n}"
 }
 
+@Suppress("CyclomaticComplexMethod")
 fun P4Declaration.toP4(): String =
   when (this) {
     is P4Function -> (this as P4Function).toP4()

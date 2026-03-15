@@ -32,6 +32,11 @@
 - Co-locate tests with the source they test in the same package.
 - Development uses devcontainer. See `docs/dev.md`.
 
+## Quality checks
+
+- Run `./dev lint` before committing. Fix all lint errors before the commit.
+- Run `./dev bazel test //...` to verify no regressions before committing.
+
 ## Commit style
 
 - Keep the subject line under 72 characters.

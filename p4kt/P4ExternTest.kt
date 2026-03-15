@@ -37,6 +37,7 @@ class P4ExternTest {
   @Test
   fun externDsl() {
     val program = p4Program {
+      @Suppress("UnusedPrivateProperty")
       val Ck16 by extern {
         constructor_()
         method("clear", void_)
