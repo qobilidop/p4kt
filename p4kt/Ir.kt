@@ -2,6 +2,8 @@ package p4kt
 
 sealed class P4Type {
   data class Bit(val width: Int) : P4Type()
+
+  data class Named(val name: String) : P4Type()
 }
 
 enum class Direction {
@@ -19,6 +21,14 @@ sealed class P4Expr {
 sealed class P4Statement {
   data class Return(val expr: P4Expr) : P4Statement()
 }
+
+data class P4Field(val name: String, val type: P4Type)
+
+data class P4Typedef(val name: String, val type: P4Type)
+
+data class P4Header(val name: String, val fields: List<P4Field>)
+
+data class P4Struct(val name: String, val fields: List<P4Field>)
 
 data class P4Function(
   val name: String,

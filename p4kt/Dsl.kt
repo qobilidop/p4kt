@@ -30,6 +30,32 @@ class FunctionBuilder(private val name: String, private val returnType: P4Type) 
   fun build() = P4Function(name, returnType, params, body)
 }
 
+fun typeName(name: String) = P4Type.Named(name)
+
+fun p4Typedef(name: String, type: P4Type) = P4Typedef(name, type)
+
+class FieldsBuilder {
+  private val fields = mutableListOf<P4Field>()
+
+  fun field(name: String, type: P4Type) {
+    fields.add(P4Field(name, type))
+  }
+
+  fun build() = fields.toList()
+}
+
+fun p4Header(name: String, block: FieldsBuilder.() -> Unit): P4Header {
+  val builder = FieldsBuilder()
+  builder.block()
+  return P4Header(name, builder.build())
+}
+
+fun p4Struct(name: String, block: FieldsBuilder.() -> Unit): P4Struct {
+  val builder = FieldsBuilder()
+  builder.block()
+  return P4Struct(name, builder.build())
+}
+
 fun p4Function(name: String, returnType: P4Type, block: FunctionBuilder.() -> Unit): P4Function {
   val builder = FunctionBuilder(name, returnType)
   builder.block()

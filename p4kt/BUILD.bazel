@@ -32,3 +32,36 @@ kt_jvm_test(
         "@maven//:org_jetbrains_kotlin_kotlin_test_junit",
     ],
 )
+
+kt_jvm_test(
+    name = "P4HeaderTest",
+    srcs = ["P4HeaderTest.kt"],
+    test_class = "p4kt.P4HeaderTest",
+    deps = [
+        ":p4kt",
+        "@maven//:org_jetbrains_kotlin_kotlin_test",
+        "@maven//:org_jetbrains_kotlin_kotlin_test_junit",
+    ],
+)
+
+kt_jvm_test(
+    name = "P4StructTest",
+    srcs = ["P4StructTest.kt"],
+    test_class = "p4kt.P4StructTest",
+    deps = [
+        ":p4kt",
+        "@maven//:org_jetbrains_kotlin_kotlin_test",
+        "@maven//:org_jetbrains_kotlin_kotlin_test_junit",
+    ],
+)
+
+kt_jvm_test(
+    name = "P4TypedefTest",
+    srcs = ["P4TypedefTest.kt"],
+    test_class = "p4kt.P4TypedefTest",
+    deps = [
+        ":p4kt",
+        "@maven//:org_jetbrains_kotlin_kotlin_test",
+        "@maven//:org_jetbrains_kotlin_kotlin_test_junit",
+    ],
+)
