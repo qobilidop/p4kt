@@ -24,6 +24,13 @@ RUN curl -fsSL "https://github.com/bazelbuild/bazelisk/releases/download/${BAZEL
         -o /usr/local/bin/bazel \
     && chmod +x /usr/local/bin/bazel
 
+ARG GRADLE_VERSION=8.13
+RUN curl -fsSL "https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip" \
+        -o /tmp/gradle.zip \
+    && unzip -o /tmp/gradle.zip -d /opt \
+    && ln -s /opt/gradle-${GRADLE_VERSION}/bin/gradle /usr/local/bin/gradle \
+    && rm /tmp/gradle.zip
+
 ARG KTFMT_VERSION=0.54
 RUN curl -fsSL "https://github.com/facebook/ktfmt/releases/download/v${KTFMT_VERSION}/ktfmt-${KTFMT_VERSION}-jar-with-dependencies.jar" \
         -o /usr/local/lib/ktfmt.jar

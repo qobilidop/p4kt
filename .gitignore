@@ -9,3 +9,7 @@ docs/superpowers/
 
 # Generated lock files; re-add when collaborators join for reproducibility
 MODULE.bazel.lock
+
+# Gradle
+.gradle/
+build/
