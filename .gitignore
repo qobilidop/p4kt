@@ -4,5 +4,8 @@ docs/superpowers/
 # Bazel output symlinks (bazel-bin, bazel-out, bazel-testlogs, etc.)
 /bazel-*
 
+# MkDocs build output
+/site/
+
 # Generated lock files; re-add when collaborators join for reproducibility
 MODULE.bazel.lock

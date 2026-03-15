@@ -1,0 +1,31 @@
+site_name: P4kt
+site_description: An embedded domain-specific language (eDSL) for P4 in Kotlin
+site_url: https://qobilidop.github.io/p4kt/
+repo_url: https://github.com/qobilidop/p4kt
+repo_name: qobilidop/p4kt
+
+theme:
+  name: material
+  features:
+    - content.code.copy
+    - navigation.sections
+  palette:
+    - scheme: default
+      primary: indigo
+
+nav:
+  - Home: index.md
+  - Examples: examples.md
+  - Design: design.md
+  - Development: dev.md
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - attr_list
+  - md_in_html

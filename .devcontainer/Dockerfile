@@ -13,9 +13,11 @@ RUN apt-get update \
         curl \
         git \
         openjdk-21-jdk-headless \
+        python3-pip \
         shellcheck \
         unzip \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && pip3 install --no-cache-dir --break-system-packages mkdocs-material==9.6.12
 
 ARG BAZELISK_VERSION=v1.28.1
 RUN curl -fsSL "https://github.com/bazelbuild/bazelisk/releases/download/${BAZELISK_VERSION}/bazelisk-linux-${TARGETARCH}" \

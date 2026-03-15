@@ -30,6 +30,20 @@ To check without modifying (used in CI):
 ./dev lint
 ```
 
+### Docs
+
+Preview the documentation site locally:
+
+```sh
+./dev docs
+```
+
+Build the site to `site/`:
+
+```sh
+./dev docs build
+```
+
 ### Build
 
 ```sh

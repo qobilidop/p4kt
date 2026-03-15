@@ -11,6 +11,10 @@ lint)
 	shift
 	exec devcontainer exec --workspace-folder "$WORKSPACE" tools/lint.sh "$@"
 	;;
+docs)
+	shift
+	exec devcontainer exec --workspace-folder "$WORKSPACE" tools/docs.sh "$@"
+	;;
 *)
 	exec devcontainer exec --workspace-folder "$WORKSPACE" "$@"
 	;;
