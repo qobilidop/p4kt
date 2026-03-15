@@ -2,9 +2,15 @@
 
 ## Goal
 
-Provide an ergonomic Kotlin eDSL for writing P4 programs, targeting developers already familiar with P4. The eDSL should feel natural to P4 programmers while leveraging Kotlin's type system for safety and IDE support.
+Provide an ergonomic Kotlin eDSL for writing P4 programs, targeting developers already familiar with P4. The current focus is the Very Simple Switch (VSS) example - the P4 spec's canonical reference program. Source: [p4c testdata](https://github.com/p4lang/p4c/tree/main/testdata/p4_16_samples)
 
-The current focus is full support of the Very Simple Switch (VSS) example - the P4 spec's canonical reference program. Source: [p4c testdata](https://github.com/p4lang/p4c/tree/main/testdata/p4_16_samples)
+## Design principles
+
+1. **Ergonomics first.** The programming interface is the product. Every API decision should optimize for how natural and pleasant the DSL is to write and read. If a P4 construct cannot be given an ergonomic representation in Kotlin, it is better left unsupported than forced into a clumsy API.
+
+2. **IDE support is non-negotiable.** Autocomplete, go-to-definition, and compile-time error checking must work. Without them, there is no reason to use P4kt over writing P4 directly.
+
+3. **Small and useful over complete.** P4kt does not need to cover all of P4. A focused subset with a great interface is more valuable than full coverage with a mediocre one.
 
 ## Architecture
 
