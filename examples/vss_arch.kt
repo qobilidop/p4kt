@@ -44,5 +44,3 @@ object vss_arch : P4.Library() {
       method("get", P4.bit(16))
     }
 }
-
-fun main() = println(vss_arch.toP4())

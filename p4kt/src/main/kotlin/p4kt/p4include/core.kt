@@ -1,10 +1,12 @@
+@file:Suppress("MatchingDeclarationName", "ClassNaming")
+
 package p4kt.p4include
 
 import p4kt.P4
 
 // Corresponds to: https://github.com/p4lang/p4c/blob/main/p4include/core.p4
 
-object Core : P4.Library() {
+object core : P4.Library() {
   init {
     errors(
       "NoError",
@@ -34,5 +36,3 @@ object Core : P4.Library() {
   // TODO: action NoAction() {} - built-in action
   // TODO: match_kind { exact, ternary, lpm } - needs match_kind IR support
 }
-
-fun main() = println(Core.toP4())

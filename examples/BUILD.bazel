@@ -1,5 +1,4 @@
-load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
-load("//tools:golden_test.bzl", "golden_test")
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library", "kt_jvm_test")
 
 kt_jvm_library(
     name = "vss_arch_lib",
@@ -7,12 +6,28 @@ kt_jvm_library(
     deps = ["//p4kt"],
 )
 
-golden_test(name = "vss_arch")
-
-golden_test(
-    name = "vss_example",
-    extra_deps = [
+kt_jvm_library(
+    name = "vss_example_lib",
+    srcs = ["vss_example.kt"],
+    deps = [
         ":vss_arch_lib",
-        "//p4kt/p4include",
+        "//p4kt:p4include",
+    ],
+)
+
+kt_jvm_test(
+    name = "GoldenTest",
+    srcs = ["GoldenTest.kt"],
+    data = [
+        "vss_arch.p4",
+        "vss_example.p4",
+    ],
+    test_class = "p4kt.examples.GoldenTest",
+    deps = [
+        ":vss_arch_lib",
+        ":vss_example_lib",
+        "//p4kt:p4include",
+        "@maven//:org_jetbrains_kotlin_kotlin_test",
+        "@maven//:org_jetbrains_kotlin_kotlin_test_junit",
     ],
 )

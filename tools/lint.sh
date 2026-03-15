@@ -25,7 +25,7 @@ fi
 
 # Shell (shellcheck)
 echo "Linting Shell..."
-SHELL_FILES="dev tools/format.sh tools/lint.sh tools/golden_test.sh tools/docs.sh tools/generate_examples_doc.sh"
+SHELL_FILES="dev tools/format.sh tools/lint.sh tools/docs.sh tools/generate_examples_doc.sh"
 # shellcheck disable=SC2086
 shellcheck $SHELL_FILES || FAILED=true
 

@@ -1,4 +1,4 @@
-@file:Suppress("MagicNumber")
+@file:Suppress("MagicNumber", "MatchingDeclarationName", "ClassNaming")
 
 package p4kt.p4include
 
@@ -7,7 +7,7 @@ import p4kt.P4Expr
 
 // Corresponds to: https://github.com/p4lang/p4c/blob/main/p4include/v1model.p4
 
-object V1model : P4.Library() {
+object v1model : P4.Library() {
   // TODO: match_kind { range, optional, selector } - needs match_kind IR support
 
   val PortId_t = typedef("PortId_t", P4.bit(9))
@@ -63,5 +63,3 @@ object V1model : P4.Library() {
   //       ComputeChecksum<H, M>, Deparser<H> - need abstract/type parameter support
   // TODO: V1Switch<H, M> package declaration - needs type parameters
 }
-
-fun main() = println(V1model.toP4())

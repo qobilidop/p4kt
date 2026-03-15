@@ -1,18 +1,16 @@
 load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library", "kt_jvm_test")
 
+# p4kt library
+
 kt_jvm_library(
     name = "p4kt",
-    srcs = [
-        "Builders.kt",
-        "Emit.kt",
-        "P4.kt",
-    ],
+    srcs = glob(["src/main/kotlin/p4kt/*.kt"]),
     visibility = ["//visibility:public"],
 )
 
 kt_jvm_test(
     name = "P4ActionTest",
-    srcs = ["P4ActionTest.kt"],
+    srcs = ["src/test/kotlin/p4kt/P4ActionTest.kt"],
     test_class = "p4kt.P4ActionTest",
     deps = [
         ":p4kt",
@@ -23,7 +21,7 @@ kt_jvm_test(
 
 kt_jvm_test(
     name = "P4ConstTest",
-    srcs = ["P4ConstTest.kt"],
+    srcs = ["src/test/kotlin/p4kt/P4ConstTest.kt"],
     test_class = "p4kt.P4ConstTest",
     deps = [
         ":p4kt",
@@ -34,7 +32,7 @@ kt_jvm_test(
 
 kt_jvm_test(
     name = "P4ControlTest",
-    srcs = ["P4ControlTest.kt"],
+    srcs = ["src/test/kotlin/p4kt/P4ControlTest.kt"],
     test_class = "p4kt.P4ControlTest",
     deps = [
         ":p4kt",
@@ -45,7 +43,7 @@ kt_jvm_test(
 
 kt_jvm_test(
     name = "P4ErrorTest",
-    srcs = ["P4ErrorTest.kt"],
+    srcs = ["src/test/kotlin/p4kt/P4ErrorTest.kt"],
     test_class = "p4kt.P4ErrorTest",
     deps = [
         ":p4kt",
@@ -56,7 +54,7 @@ kt_jvm_test(
 
 kt_jvm_test(
     name = "P4ExpressionTest",
-    srcs = ["P4ExpressionTest.kt"],
+    srcs = ["src/test/kotlin/p4kt/P4ExpressionTest.kt"],
     test_class = "p4kt.P4ExpressionTest",
     deps = [
         ":p4kt",
@@ -67,7 +65,7 @@ kt_jvm_test(
 
 kt_jvm_test(
     name = "P4ExternTest",
-    srcs = ["P4ExternTest.kt"],
+    srcs = ["src/test/kotlin/p4kt/P4ExternTest.kt"],
     test_class = "p4kt.P4ExternTest",
     deps = [
         ":p4kt",
@@ -78,7 +76,7 @@ kt_jvm_test(
 
 kt_jvm_test(
     name = "P4FunctionTest",
-    srcs = ["P4FunctionTest.kt"],
+    srcs = ["src/test/kotlin/p4kt/P4FunctionTest.kt"],
     test_class = "p4kt.P4FunctionTest",
     deps = [
         ":p4kt",
@@ -89,7 +87,7 @@ kt_jvm_test(
 
 kt_jvm_test(
     name = "P4HeaderTest",
-    srcs = ["P4HeaderTest.kt"],
+    srcs = ["src/test/kotlin/p4kt/P4HeaderTest.kt"],
     test_class = "p4kt.P4HeaderTest",
     deps = [
         ":p4kt",
@@ -100,7 +98,7 @@ kt_jvm_test(
 
 kt_jvm_test(
     name = "P4ParserTest",
-    srcs = ["P4ParserTest.kt"],
+    srcs = ["src/test/kotlin/p4kt/P4ParserTest.kt"],
     test_class = "p4kt.P4ParserTest",
     deps = [
         ":p4kt",
@@ -111,7 +109,7 @@ kt_jvm_test(
 
 kt_jvm_test(
     name = "P4ProgramTest",
-    srcs = ["P4ProgramTest.kt"],
+    srcs = ["src/test/kotlin/p4kt/P4ProgramTest.kt"],
     test_class = "p4kt.P4ProgramTest",
     deps = [
         ":p4kt",
@@ -122,7 +120,7 @@ kt_jvm_test(
 
 kt_jvm_test(
     name = "P4RefTest",
-    srcs = ["P4RefTest.kt"],
+    srcs = ["src/test/kotlin/p4kt/P4RefTest.kt"],
     test_class = "p4kt.P4RefTest",
     deps = [
         ":p4kt",
@@ -133,7 +131,7 @@ kt_jvm_test(
 
 kt_jvm_test(
     name = "P4StatementTest",
-    srcs = ["P4StatementTest.kt"],
+    srcs = ["src/test/kotlin/p4kt/P4StatementTest.kt"],
     test_class = "p4kt.P4StatementTest",
     deps = [
         ":p4kt",
@@ -144,7 +142,7 @@ kt_jvm_test(
 
 kt_jvm_test(
     name = "P4StructTest",
-    srcs = ["P4StructTest.kt"],
+    srcs = ["src/test/kotlin/p4kt/P4StructTest.kt"],
     test_class = "p4kt.P4StructTest",
     deps = [
         ":p4kt",
@@ -155,10 +153,34 @@ kt_jvm_test(
 
 kt_jvm_test(
     name = "P4TypedefTest",
-    srcs = ["P4TypedefTest.kt"],
+    srcs = ["src/test/kotlin/p4kt/P4TypedefTest.kt"],
     test_class = "p4kt.P4TypedefTest",
     deps = [
         ":p4kt",
+        "@maven//:org_jetbrains_kotlin_kotlin_test",
+        "@maven//:org_jetbrains_kotlin_kotlin_test_junit",
+    ],
+)
+
+# p4include library
+
+kt_jvm_library(
+    name = "p4include",
+    srcs = glob(["src/main/kotlin/p4kt/p4include/*.kt"]),
+    visibility = ["//visibility:public"],
+    deps = [":p4kt"],
+)
+
+kt_jvm_test(
+    name = "GoldenTest",
+    srcs = ["src/test/kotlin/p4kt/p4include/GoldenTest.kt"],
+    data = [
+        "src/test/resources/p4kt/p4include/core.p4",
+        "src/test/resources/p4kt/p4include/v1model.p4",
+    ],
+    test_class = "p4kt.p4include.GoldenTest",
+    deps = [
+        ":p4include",
         "@maven//:org_jetbrains_kotlin_kotlin_test",
         "@maven//:org_jetbrains_kotlin_kotlin_test_junit",
     ],
