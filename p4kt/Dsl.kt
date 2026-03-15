@@ -73,11 +73,31 @@ class IfBuilder(private val parentBody: MutableList<P4Statement>, private val in
   }
 }
 
+class TypedParamDelegate<T : StructRef>(
+  private val params: MutableList<P4Param>,
+  private val clazz: kotlin.reflect.KClass<T>,
+  private val direction: Direction? = null,
+) {
+  operator fun provideDelegate(
+    thisRef: Any?,
+    property: kotlin.reflect.KProperty<*>,
+  ): ReadOnlyProperty<Any?, T> {
+    params.add(P4Param(property.name, P4Type.Named(clazz.simpleName!!), direction))
+    val instance = clazz.constructors.first().call(P4Expr.Ref(property.name))
+    return ReadOnlyProperty { _, _ -> instance }
+  }
+}
+
 class FunctionBuilder(private val name: String, private val returnType: P4Type) :
   StatementBuilder() {
-  private val params = mutableListOf<P4Param>()
+  @PublishedApi internal val params = mutableListOf<P4Param>()
 
   fun param(type: P4Type, direction: Direction) = ParamDelegate(params, type, direction)
+
+  inline fun <reified T : StructRef> param() = TypedParamDelegate(params, T::class)
+
+  inline fun <reified T : StructRef> param(direction: Direction) =
+    TypedParamDelegate(params, T::class, direction)
 
   fun build() = P4Function(name, returnType, params, body)
 }
@@ -168,11 +188,16 @@ class ParamDelegate(
 }
 
 class ActionBuilder : StatementBuilder() {
-  private val params = mutableListOf<P4Param>()
+  @PublishedApi internal val params = mutableListOf<P4Param>()
 
   fun param(type: P4Type) = ParamDelegate(params, type)
 
   fun param(type: P4Type, direction: Direction) = ParamDelegate(params, type, direction)
+
+  inline fun <reified T : StructRef> param() = TypedParamDelegate(params, T::class)
+
+  inline fun <reified T : StructRef> param(direction: Direction) =
+    TypedParamDelegate(params, T::class, direction)
 
   fun build(name: String) = P4Action(name, params, body)
 }

@@ -80,6 +80,29 @@ class P4RefTest {
   }
 
   @Test
+  fun typedParamInAction() {
+    class OutControl(base: P4Expr) : StructRef(base) {
+      val outputPort by field(bit(4))
+    }
+
+    val a =
+      p4Action("Drop") {
+        val outCtrl by param<OutControl>(INOUT)
+        assign(outCtrl.outputPort, lit(4, 0xF))
+      }
+
+    assertEquals(
+      """
+          action Drop(inout OutControl outCtrl) {
+              outCtrl.outputPort = 4w15;
+          }
+      """
+        .trimIndent(),
+      a.toP4(),
+    )
+  }
+
+  @Test
   fun headerRegistrationGeneratesIrDeclaration() {
     val program = p4Program {
       class Ipv4_h(base: P4Expr) : HeaderRef(base) {
