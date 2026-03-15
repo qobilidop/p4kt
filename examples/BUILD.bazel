@@ -1,3 +1,5 @@
 load("//tools:golden_test.bzl", "golden_test")
 
 golden_test(name = "identity")
+
+golden_test(name = "vss_types")
