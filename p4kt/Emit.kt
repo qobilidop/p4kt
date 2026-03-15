@@ -221,5 +221,3 @@ fun P4Declaration.toP4(): String =
     is P4Parser -> (this as P4Parser).toP4()
     is P4PackageInstance -> (this as P4PackageInstance).toP4()
   }
-
-fun P4Program.toP4(): String = declarations.joinToString("\n\n") { it.toP4() }

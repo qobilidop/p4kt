@@ -1,8 +1,15 @@
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 load("//tools:golden_test.bzl", "golden_test")
+
+kt_jvm_library(
+    name = "vss_arch_lib",
+    srcs = ["vss_arch.kt"],
+    deps = ["//p4kt"],
+)
 
 golden_test(name = "vss_arch")
 
 golden_test(
     name = "vss_example",
-    extra_srcs = ["vss_arch.kt"],
+    extra_deps = [":vss_arch_lib"],
 )

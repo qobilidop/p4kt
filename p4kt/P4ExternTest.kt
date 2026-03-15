@@ -40,8 +40,8 @@ class P4ExternTest {
       @Suppress("UnusedPrivateProperty")
       val Ck16 by extern {
         constructor_()
-        method("clear", void_)
-        method("get", bit(16))
+        method("clear", P4.void_)
+        method("get", P4.bit(16))
       }
     }
     assertEquals(

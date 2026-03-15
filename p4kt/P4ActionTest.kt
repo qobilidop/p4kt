@@ -21,14 +21,14 @@ class P4ActionTest {
   fun actionWithDirectionlessParams() {
     val a =
       p4Action("Set_nhop") {
-        val ipv4_dest by param(typeName("IPv4Address"))
-        val port by param(typeName("PortId"))
-        assign(ref("nextHop"), ipv4_dest)
+        val ipv4_dest by param(P4.typeName("IPv4Address"))
+        val port by param(P4.typeName("PortId"))
+        assign(P4.ref("nextHop"), ipv4_dest)
         assign(
-          P4Expr.FieldAccess(P4Expr.FieldAccess(ref("headers"), "ip"), "ttl"),
-          P4Expr.FieldAccess(P4Expr.FieldAccess(ref("headers"), "ip"), "ttl") - lit(1),
+          P4Expr.FieldAccess(P4Expr.FieldAccess(P4.ref("headers"), "ip"), "ttl"),
+          P4Expr.FieldAccess(P4Expr.FieldAccess(P4.ref("headers"), "ip"), "ttl") - P4.lit(1),
         )
-        assign(P4Expr.FieldAccess(ref("outCtrl"), "outputPort"), port)
+        assign(P4Expr.FieldAccess(P4.ref("outCtrl"), "outputPort"), port)
       }
 
     assertEquals(

@@ -8,8 +8,8 @@ class P4StructTest {
   fun parsedPacketStruct() {
     val parsedPacket =
       p4Struct("Parsed_packet") {
-        field("ethernet", typeName("Ethernet_h"))
-        field("ip", typeName("Ipv4_h"))
+        field("ethernet", P4.typeName("Ethernet_h"))
+        field("ip", P4.typeName("Ipv4_h"))
       }
 
     assertEquals(

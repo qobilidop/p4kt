@@ -1,6 +1,63 @@
+@file:Suppress("TooManyFunctions")
+
 package p4kt
 
 import kotlin.properties.ReadOnlyProperty
+
+// Internal IR types
+
+data class P4Param(val name: String, val type: P4Type, val direction: Direction? = null)
+
+sealed class P4Statement {
+  data class Return(val expr: P4Expr?) : P4Statement()
+
+  data class MethodCall(val expr: P4Expr, val method: String, val args: List<P4Expr>) :
+    P4Statement()
+
+  data class VarDecl(val name: String, val type: P4Type, val init: P4Expr?) : P4Statement()
+
+  data class Assign(val target: P4Expr, val value: P4Expr) : P4Statement()
+
+  data class If(
+    val condition: P4Expr,
+    val thenBody: List<P4Statement>,
+    val elseBody: List<P4Statement>,
+  ) : P4Statement()
+
+  data class Verify(val condition: P4Expr, val error: P4Expr) : P4Statement()
+
+  data class Transition(val stateName: String) : P4Statement()
+
+  data class TransitionSelect(val expr: P4Expr, val cases: List<Pair<P4Expr, String>>) :
+    P4Statement()
+
+  data class FunctionCall(val name: String, val args: List<P4Expr>) : P4Statement()
+}
+
+data class P4Field(val name: String, val type: P4Type)
+
+enum class BinOpKind {
+  SUB,
+  EQ,
+  NE,
+}
+
+data class P4KeyEntry(val expr: P4Expr, val matchKind: MatchKind)
+
+data class P4LocalVar(val name: String, val type: P4Type) : P4Declaration
+
+data class P4Function(
+  val name: String,
+  val returnType: P4Type,
+  val params: List<P4Param>,
+  val body: List<P4Statement>,
+) : P4Declaration
+
+data class P4ExternMethod(val name: String, val returnType: P4Type, val params: List<P4Param>)
+
+data class P4ExternInstance(val typeName: String, val name: String) : P4Declaration
+
+data class P4ParserState(val name: String, val body: List<P4Statement>)
 
 // Property delegates
 
@@ -18,7 +75,7 @@ class ParamDelegate(
   }
 }
 
-class TypedParamDelegate<T : StructRef>(
+class TypedParamDelegate<T : P4.StructRef>(
   private val params: MutableList<P4Param>,
   private val factory: (P4Expr) -> T,
   private val direction: Direction? = null,
@@ -95,10 +152,10 @@ class TableDeclDelegate(
   operator fun provideDelegate(
     thisRef: Any?,
     property: kotlin.reflect.KProperty<*>,
-  ): ReadOnlyProperty<Any?, P4TableRef> {
+  ): ReadOnlyProperty<Any?, P4.TableRef> {
     val table = factory(property.name)
     register(table)
-    return ReadOnlyProperty { _, _ -> P4TableRef(property.name) }
+    return ReadOnlyProperty { _, _ -> P4.TableRef(property.name) }
   }
 }
 
@@ -112,6 +169,85 @@ class ExternInstanceDelegate(
   ): ReadOnlyProperty<Any?, P4Expr.Ref> {
     declarations.add(P4ExternInstance(typeName, property.name))
     return ReadOnlyProperty { _, _ -> P4Expr.Ref(property.name) }
+  }
+}
+
+class StateDeclDelegate(
+  private val deferredStates: MutableList<Pair<String, StateBuilder.() -> Unit>>,
+  private val block: StateBuilder.() -> Unit,
+) {
+  operator fun provideDelegate(
+    thisRef: Any?,
+    property: kotlin.reflect.KProperty<*>,
+  ): ReadOnlyProperty<Any?, P4.StateRef> {
+    deferredStates.add(property.name to block)
+    return ReadOnlyProperty { _, _ -> P4.StateRef(property.name) }
+  }
+}
+
+// Statement builder
+
+open class StatementBuilder {
+  protected val body = mutableListOf<P4Statement>()
+
+  fun varDecl(type: P4Type, init: P4Expr? = null) = VarDeclDelegate(body, type, init)
+
+  fun assign(target: P4Expr, value: P4Expr) {
+    body.add(P4Statement.Assign(target, value))
+  }
+
+  fun if_(condition: P4Expr, block: StatementBuilder.() -> Unit): IfBuilder {
+    val thenBuilder = StatementBuilder()
+    thenBuilder.block()
+    body.add(P4Statement.If(condition, thenBuilder.statements(), emptyList()))
+    return IfBuilder(body, body.size - 1)
+  }
+
+  fun return_(expr: P4Expr) {
+    body.add(P4Statement.Return(expr))
+  }
+
+  fun return_() {
+    body.add(P4Statement.Return(null))
+  }
+
+  fun stmt(statement: P4Statement) {
+    body.add(statement)
+  }
+
+  fun call(expr: P4Expr, method: String, vararg args: P4Expr) {
+    body.add(P4Statement.MethodCall(expr, method, args.toList()))
+  }
+
+  fun call(obj: P4.StructRef, method: String, vararg args: P4Expr) {
+    call(obj.expr, method, *args)
+  }
+
+  fun call(expr: P4Expr, method: String, arg: P4.StructRef) {
+    body.add(P4Statement.MethodCall(expr, method, listOf(arg.expr)))
+  }
+
+  fun call(name: String, vararg args: P4Expr) {
+    body.add(P4Statement.FunctionCall(name, args.toList()))
+  }
+
+  fun verify(condition: P4Expr, error: P4Expr) {
+    body.add(P4Statement.Verify(condition, error))
+  }
+
+  fun P4.TableRef.apply_() {
+    body.add(P4Statement.MethodCall(P4Expr.Ref(name), "apply", emptyList()))
+  }
+
+  fun statements() = body.toList()
+}
+
+class IfBuilder(private val parentBody: MutableList<P4Statement>, private val index: Int) {
+  infix fun else_(block: StatementBuilder.() -> Unit) {
+    val elseBuilder = StatementBuilder()
+    elseBuilder.block()
+    val oldIf = parentBody[index] as P4Statement.If
+    parentBody[index] = oldIf.copy(elseBody = elseBuilder.statements())
   }
 }
 
@@ -143,9 +279,9 @@ class ActionBuilder : StatementBuilder() {
   fun param(type: P4TypeReference, direction: Direction) =
     ParamDelegate(params, type.typeRef, direction)
 
-  fun <T : StructRef> param(factory: (P4Expr) -> T) = TypedParamDelegate(params, factory)
+  fun <T : P4.StructRef> param(factory: (P4Expr) -> T) = TypedParamDelegate(params, factory)
 
-  fun <T : StructRef> param(factory: (P4Expr) -> T, direction: Direction) =
+  fun <T : P4.StructRef> param(factory: (P4Expr) -> T, direction: Direction) =
     TypedParamDelegate(params, factory, direction)
 
   fun build(name: String) = P4Action(name, params, body)
@@ -160,9 +296,9 @@ class FunctionBuilder(private val name: String, private val returnType: P4Type) 
   fun param(type: P4TypeReference, direction: Direction) =
     ParamDelegate(params, type.typeRef, direction)
 
-  fun <T : StructRef> param(factory: (P4Expr) -> T) = TypedParamDelegate(params, factory)
+  fun <T : P4.StructRef> param(factory: (P4Expr) -> T) = TypedParamDelegate(params, factory)
 
-  fun <T : StructRef> param(factory: (P4Expr) -> T, direction: Direction) =
+  fun <T : P4.StructRef> param(factory: (P4Expr) -> T, direction: Direction) =
     TypedParamDelegate(params, factory, direction)
 
   fun build() = P4Function(name, returnType, params, body)
@@ -247,7 +383,7 @@ class ControlBuilder : StatementBuilder() {
   fun param(type: P4TypeReference, direction: Direction) =
     ParamDelegate(params, type.typeRef, direction)
 
-  fun <T : StructRef> param(factory: (P4Expr) -> T, direction: Direction) =
+  fun <T : P4.StructRef> param(factory: (P4Expr) -> T, direction: Direction) =
     TypedParamDelegate(params, factory, direction)
 
   fun action(block: ActionBuilder.() -> Unit) =
@@ -285,21 +421,8 @@ class ControlBuilder : StatementBuilder() {
   fun build(name: String) = P4Control(name, params, declarations, body)
 }
 
-class StateDeclDelegate(
-  private val deferredStates: MutableList<Pair<String, StateBuilder.() -> Unit>>,
-  private val block: StateBuilder.() -> Unit,
-) {
-  operator fun provideDelegate(
-    thisRef: Any?,
-    property: kotlin.reflect.KProperty<*>,
-  ): ReadOnlyProperty<Any?, P4StateRef> {
-    deferredStates.add(property.name to block)
-    return ReadOnlyProperty { _, _ -> P4StateRef(property.name) }
-  }
-}
-
 class StateBuilder : StatementBuilder() {
-  fun transition(stateRef: P4StateRef) {
+  fun transition(stateRef: P4.StateRef) {
     body.add(P4Statement.Transition(stateRef.name))
   }
 
@@ -315,7 +438,7 @@ class StateBuilder : StatementBuilder() {
 class SelectBuilder {
   private val cases = mutableListOf<Pair<P4Expr, String>>()
 
-  infix fun P4Expr.to(stateRef: P4StateRef) {
+  infix fun P4Expr.to(stateRef: P4.StateRef) {
     cases.add(this to stateRef.name)
   }
 
@@ -334,7 +457,7 @@ class ParserBuilder {
   fun param(type: P4TypeReference, direction: Direction) =
     ParamDelegate(params, type.typeRef, direction)
 
-  fun <T : StructRef> param(factory: (P4Expr) -> T, direction: Direction) =
+  fun <T : P4.StructRef> param(factory: (P4Expr) -> T, direction: Direction) =
     TypedParamDelegate(params, factory, direction)
 
   fun externInstance(extern: P4Extern) = ExternInstanceDelegate(declarations, extern.name)
@@ -435,12 +558,12 @@ class ProgramBuilder {
       register = { declarations.add(it) },
     )
 
-  fun <T : StructRef> struct(factory: (P4Expr) -> T) {
+  fun <T : P4.StructRef> struct(factory: (P4Expr) -> T) {
     val dummy = factory(P4Expr.Ref(""))
     declarations.add(P4Struct(dummy::class.simpleName!!, dummy.fields.toList()))
   }
 
-  fun <T : HeaderRef> header(factory: (P4Expr) -> T) {
+  fun <T : P4.HeaderRef> header(factory: (P4Expr) -> T) {
     val dummy = factory(P4Expr.Ref(""))
     declarations.add(P4Header(dummy::class.simpleName!!, dummy.fields.toList()))
   }
@@ -486,46 +609,4 @@ class ProgramBuilder {
   }
 
   fun build() = P4Program(declarations.toList())
-}
-
-abstract class P4Library {
-  private val declarations = mutableListOf<P4Declaration>()
-
-  protected fun typedef(name: String, type: P4Type): P4Typedef {
-    val td = p4Typedef(name, type)
-    declarations.add(td)
-    return td
-  }
-
-  protected fun const_(name: String, type: P4Type, value: P4Expr): P4Const {
-    val c = p4Const(name, type, value)
-    declarations.add(c)
-    return c
-  }
-
-  protected fun <T : StructRef> struct(factory: (P4Expr) -> T) {
-    val dummy = factory(P4Expr.Ref(""))
-    declarations.add(P4Struct(dummy::class.simpleName!!, dummy.fields.toList()))
-  }
-
-  protected fun <T : HeaderRef> header(factory: (P4Expr) -> T) {
-    val dummy = factory(P4Expr.Ref(""))
-    declarations.add(P4Header(dummy::class.simpleName!!, dummy.fields.toList()))
-  }
-
-  protected fun extern(name: String, block: ExternBuilder.() -> Unit): P4Extern {
-    val builder = ExternBuilder(name)
-    builder.block()
-    val ext = builder.build()
-    declarations.add(ext)
-    return ext
-  }
-
-  fun toP4() = P4Program(declarations).toP4()
-}
-
-fun p4Program(block: ProgramBuilder.() -> Unit): P4Program {
-  val builder = ProgramBuilder()
-  builder.block()
-  return builder.build()
 }

@@ -8,9 +8,9 @@ class P4HeaderTest {
   fun ethernetHeader() {
     val ethernetH =
       p4Header("Ethernet_h") {
-        field("dstAddr", typeName("EthernetAddress"))
-        field("srcAddr", typeName("EthernetAddress"))
-        field("etherType", bit(16))
+        field("dstAddr", P4.typeName("EthernetAddress"))
+        field("srcAddr", P4.typeName("EthernetAddress"))
+        field("etherType", P4.bit(16))
       }
 
     assertEquals(

@@ -26,7 +26,7 @@ class P4ControlTest {
 
     val table =
       p4Table("ipv4_match") {
-        key(P4Expr.FieldAccess(P4Expr.Ref("headers"), "dstAddr"), LPM)
+        key(P4Expr.FieldAccess(P4Expr.Ref("headers"), "dstAddr"), P4.LPM)
         actions(dropAction, setNhop)
         size(1024)
         defaultAction(dropAction)
@@ -40,22 +40,22 @@ class P4ControlTest {
 
   @Test
   fun controlDsl() {
-    class OutControl(base: P4Expr) : StructRef(base) {
-      val outputPort by field(bit(4))
+    class OutControl(base: P4Expr) : P4.StructRef(base) {
+      val outputPort by field(P4.bit(4))
     }
 
-    @Suppress("VariableNaming") val IPv4Address = P4Typedef("IPv4Address", bit(32))
+    @Suppress("VariableNaming") val IPv4Address = P4Typedef("IPv4Address", P4.bit(32))
 
     val ctrl =
       p4Control("TopPipe") {
-        val outCtrl by param(::OutControl, OUT)
+        val outCtrl by param(::OutControl, P4.OUT)
 
-        val Drop_action by action { assign(outCtrl.outputPort, ref("DROP_PORT")) }
+        val Drop_action by action { assign(outCtrl.outputPort, P4.ref("DROP_PORT")) }
 
         @Suppress("UnusedPrivateProperty", "VariableNaming") val nextHop by varDecl(IPv4Address)
 
         val ipv4_match by table {
-          key(P4Expr.FieldAccess(P4Expr.Ref("headers"), "dstAddr"), LPM)
+          key(P4Expr.FieldAccess(P4Expr.Ref("headers"), "dstAddr"), P4.LPM)
           actions(Drop_action)
           size(1024)
           defaultAction(Drop_action)
@@ -63,7 +63,7 @@ class P4ControlTest {
 
         apply {
           ipv4_match.apply_()
-          if_(outCtrl.outputPort eq ref("DROP_PORT")) { return_() }
+          if_(outCtrl.outputPort eq P4.ref("DROP_PORT")) { return_() }
         }
       }
 
@@ -75,8 +75,8 @@ class P4ControlTest {
 
   @Test
   fun controlInProgram() {
-    class OutControl(base: P4Expr) : StructRef(base) {
-      val outputPort by field(bit(4))
+    class OutControl(base: P4Expr) : P4.StructRef(base) {
+      val outputPort by field(P4.bit(4))
     }
 
     val program = p4Program {
@@ -84,12 +84,12 @@ class P4ControlTest {
 
       @Suppress("UnusedPrivateProperty")
       val TopPipe by control {
-        val outCtrl by param(::OutControl, OUT)
+        val outCtrl by param(::OutControl, P4.OUT)
 
         @Suppress("UnusedPrivateProperty")
-        val Drop by action { assign(outCtrl.outputPort, lit(4, 0xF)) }
+        val Drop by action { assign(outCtrl.outputPort, P4.lit(4, 0xF)) }
 
-        apply { if_(outCtrl.outputPort eq lit(4, 0xF)) { return_() } }
+        apply { if_(outCtrl.outputPort eq P4.lit(4, 0xF)) { return_() } }
       }
     }
 
@@ -212,7 +212,7 @@ class P4ControlTest {
     val dropAction = p4Action("Drop") {}
     val table =
       p4Table("check_ttl") {
-        key(P4Expr.Ref("ttl"), EXACT)
+        key(P4Expr.Ref("ttl"), P4.EXACT)
         actions(dropAction)
         actionByName("NoAction")
         defaultAction("NoAction", const_ = true)

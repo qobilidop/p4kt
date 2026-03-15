@@ -6,8 +6,8 @@ import kotlin.test.assertEquals
 class P4RefTest {
   @Test
   fun structRefFieldProducesFieldAccessExpr() {
-    class OutControl(base: P4Expr) : StructRef(base) {
-      val outputPort by field(bit(4))
+    class OutControl(base: P4Expr) : P4.StructRef(base) {
+      val outputPort by field(P4.bit(4))
     }
 
     val ref = OutControl(P4Expr.Ref("outCtrl"))
@@ -16,19 +16,19 @@ class P4RefTest {
 
   @Test
   fun structRefCollectsFieldMetadata() {
-    class OutControl(base: P4Expr) : StructRef(base) {
-      val outputPort by field(bit(4))
+    class OutControl(base: P4Expr) : P4.StructRef(base) {
+      val outputPort by field(P4.bit(4))
     }
 
     val ref = OutControl(P4Expr.Ref(""))
-    assertEquals(listOf(P4Field("outputPort", bit(4))), ref.fields)
+    assertEquals(listOf(P4Field("outputPort", P4.bit(4))), ref.fields)
   }
 
   @Test
   fun headerRefFieldProducesFieldAccessExpr() {
-    class Ipv4_h(base: P4Expr) : HeaderRef(base) {
-      val ttl by field(bit(8))
-      val srcAddr by field(bit(32))
+    class Ipv4_h(base: P4Expr) : P4.HeaderRef(base) {
+      val ttl by field(P4.bit(8))
+      val srcAddr by field(P4.bit(32))
     }
 
     val ref = Ipv4_h(P4Expr.Ref("ip"))
@@ -38,20 +38,20 @@ class P4RefTest {
 
   @Test
   fun headerRefCollectsFieldsInOrder() {
-    class Ipv4_h(base: P4Expr) : HeaderRef(base) {
-      val ttl by field(bit(8))
-      val srcAddr by field(bit(32))
+    class Ipv4_h(base: P4Expr) : P4.HeaderRef(base) {
+      val ttl by field(P4.bit(8))
+      val srcAddr by field(P4.bit(32))
     }
 
     val ref = Ipv4_h(P4Expr.Ref(""))
-    assertEquals(listOf(P4Field("ttl", bit(8)), P4Field("srcAddr", bit(32))), ref.fields)
+    assertEquals(listOf(P4Field("ttl", P4.bit(8)), P4Field("srcAddr", P4.bit(32))), ref.fields)
   }
 
   @Test
   fun fieldAcceptsTypeReference() {
-    @Suppress("VariableNaming") val PortId = P4Typedef("PortId", bit(4))
+    @Suppress("VariableNaming") val PortId = P4Typedef("PortId", P4.bit(4))
 
-    class OutControl(base: P4Expr) : StructRef(base) {
+    class OutControl(base: P4Expr) : P4.StructRef(base) {
       val outputPort by field(PortId)
     }
 
@@ -62,8 +62,8 @@ class P4RefTest {
   @Test
   fun structRegistrationGeneratesIrDeclaration() {
     val program = p4Program {
-      class OutControl(base: P4Expr) : StructRef(base) {
-        val outputPort by field(bit(4))
+      class OutControl(base: P4Expr) : P4.StructRef(base) {
+        val outputPort by field(P4.bit(4))
       }
       struct(::OutControl)
     }
@@ -81,14 +81,14 @@ class P4RefTest {
 
   @Test
   fun typedParamInAction() {
-    class OutControl(base: P4Expr) : StructRef(base) {
-      val outputPort by field(bit(4))
+    class OutControl(base: P4Expr) : P4.StructRef(base) {
+      val outputPort by field(P4.bit(4))
     }
 
     val a =
       p4Action("Drop") {
-        val outCtrl by param(::OutControl, INOUT)
-        assign(outCtrl.outputPort, lit(4, 0xF))
+        val outCtrl by param(::OutControl, P4.INOUT)
+        assign(outCtrl.outputPort, P4.lit(4, 0xF))
       }
 
     assertEquals(
@@ -104,12 +104,12 @@ class P4RefTest {
 
   @Test
   fun paramAcceptsTypeReference() {
-    @Suppress("VariableNaming") val PortId = P4Typedef("PortId", bit(4))
+    @Suppress("VariableNaming") val PortId = P4Typedef("PortId", P4.bit(4))
 
     val a =
       p4Action("Set") {
         val port by param(PortId)
-        assign(ref("outPort"), port)
+        assign(P4.ref("outPort"), port)
       }
 
     assertEquals(
@@ -125,12 +125,12 @@ class P4RefTest {
 
   @Test
   fun paramAcceptsTypeReferenceWithDirection() {
-    @Suppress("VariableNaming") val PortId = P4Typedef("PortId", bit(4))
+    @Suppress("VariableNaming") val PortId = P4Typedef("PortId", P4.bit(4))
 
     val a =
       p4Action("Set") {
-        val port by param(PortId, IN)
-        assign(ref("outPort"), port)
+        val port by param(PortId, P4.IN)
+        assign(P4.ref("outPort"), port)
       }
 
     assertEquals(
@@ -146,14 +146,14 @@ class P4RefTest {
 
   @Test
   fun refConvenienceFunction() {
-    assertEquals("foo", ref("foo").toP4())
+    assertEquals("foo", P4.ref("foo").toP4())
   }
 
   @Test
   fun voidReturn() {
     val a =
       p4Action("Drop") {
-        assign(ref("x"), lit(1))
+        assign(P4.ref("x"), P4.lit(1))
         return_()
       }
 
@@ -171,11 +171,11 @@ class P4RefTest {
 
   @Test
   fun typedFieldProducesTypedRef() {
-    class Ipv4_h(base: P4Expr) : HeaderRef(base) {
-      val ttl by field(bit(8))
+    class Ipv4_h(base: P4Expr) : P4.HeaderRef(base) {
+      val ttl by field(P4.bit(8))
     }
 
-    class Parsed_packet(base: P4Expr) : StructRef(base) {
+    class Parsed_packet(base: P4Expr) : P4.StructRef(base) {
       val ip by field(::Ipv4_h)
     }
 
@@ -186,11 +186,11 @@ class P4RefTest {
 
   @Test
   fun typedFieldCollectsMetadata() {
-    class Ipv4_h(base: P4Expr) : HeaderRef(base) {
-      val ttl by field(bit(8))
+    class Ipv4_h(base: P4Expr) : P4.HeaderRef(base) {
+      val ttl by field(P4.bit(8))
     }
 
-    class Parsed_packet(base: P4Expr) : StructRef(base) {
+    class Parsed_packet(base: P4Expr) : P4.StructRef(base) {
       val ip by field(::Ipv4_h)
     }
 
@@ -200,19 +200,19 @@ class P4RefTest {
 
   @Test
   fun typedFieldRegistersCorrectly() {
-    class Ethernet_h(base: P4Expr) : HeaderRef(base) {
-      val dstAddr by field(bit(48))
+    class Ethernet_h(base: P4Expr) : P4.HeaderRef(base) {
+      val dstAddr by field(P4.bit(48))
     }
 
-    class Ipv4_h(base: P4Expr) : HeaderRef(base) {
-      val ttl by field(bit(8))
+    class Ipv4_h(base: P4Expr) : P4.HeaderRef(base) {
+      val ttl by field(P4.bit(8))
     }
 
     val program = p4Program {
       header(::Ethernet_h)
       header(::Ipv4_h)
 
-      class Parsed_packet(base: P4Expr) : StructRef(base) {
+      class Parsed_packet(base: P4Expr) : P4.StructRef(base) {
         val ethernet by field(::Ethernet_h)
         val ip by field(::Ipv4_h)
       }
@@ -242,9 +242,9 @@ class P4RefTest {
   @Test
   fun headerRegistrationGeneratesIrDeclaration() {
     val program = p4Program {
-      class Ipv4_h(base: P4Expr) : HeaderRef(base) {
-        val ttl by field(bit(8))
-        val srcAddr by field(bit(32))
+      class Ipv4_h(base: P4Expr) : P4.HeaderRef(base) {
+        val ttl by field(P4.bit(8))
+        val srcAddr by field(P4.bit(32))
       }
       header(::Ipv4_h)
     }

@@ -7,32 +7,32 @@ import kotlin.test.assertEquals
 class P4ExpressionTest {
   @Test
   fun boolType() {
-    assertEquals("bool", bool_.toP4())
+    assertEquals("bool", P4.bool_.toP4())
   }
 
   @Test
   fun voidType() {
-    assertEquals("void", void_.toP4())
+    assertEquals("void", P4.void_.toP4())
   }
 
   @Test
   fun untypedLiteral() {
-    assertEquals("42", lit(42).toP4())
+    assertEquals("42", P4.lit(42).toP4())
   }
 
   @Test
   fun hexLiteral() {
-    assertEquals("2048", lit(0x0800).toP4())
+    assertEquals("2048", P4.lit(0x0800).toP4())
   }
 
   @Test
   fun typedLiteral() {
-    assertEquals("4w4", lit(4, 4).toP4())
+    assertEquals("4w4", P4.lit(4, 4).toP4())
   }
 
   @Test
   fun typedLiteralZero() {
-    assertEquals("16w0", lit(16, 0).toP4())
+    assertEquals("16w0", P4.lit(16, 0).toP4())
   }
 
   @Test
@@ -75,7 +75,7 @@ class P4ExpressionTest {
   fun nestedExpression() {
     val headers = P4Expr.Ref("headers")
     val ttl = P4Expr.FieldAccess(P4Expr.FieldAccess(headers, "ip"), "ttl")
-    assertEquals("headers.ip.ttl - 1", (ttl - lit(1)).toP4())
+    assertEquals("headers.ip.ttl - 1", (ttl - P4.lit(1)).toP4())
   }
 
   // Task 1: Method call expression
@@ -94,7 +94,7 @@ class P4ExpressionTest {
 
   @Test
   fun methodCallExpressionDsl() {
-    val ck = ref("ck")
+    val ck = P4.ref("ck")
     assertEquals("ck.get()", ck.call("get").toP4())
   }
 
@@ -108,7 +108,7 @@ class P4ExpressionTest {
 
   @Test
   fun errorMemberDsl() {
-    assertEquals("error.NoError", error_("NoError").toP4())
+    assertEquals("error.NoError", P4.error_("NoError").toP4())
   }
 
   // Task 3: New types

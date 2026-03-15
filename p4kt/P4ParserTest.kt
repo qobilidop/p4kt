@@ -127,11 +127,11 @@ class P4ParserTest {
 
   @Test
   fun parserDsl() {
-    class Ethernet_h(base: P4Expr) : HeaderRef(base) {
+    class Ethernet_h(base: P4Expr) : P4.HeaderRef(base) {
       val etherType by field(P4Type.Bit(16))
     }
 
-    class Parsed_packet(base: P4Expr) : StructRef(base) {
+    class Parsed_packet(base: P4Expr) : P4.StructRef(base) {
       val ethernet by field(::Ethernet_h)
       val ip by field(P4Type.Named("Ipv4_h"))
     }
@@ -141,18 +141,18 @@ class P4ParserTest {
 
       @Suppress("UnusedPrivateProperty")
       val TopParser by parser {
-        val b by param(packet_in)
-        val p by param(::Parsed_packet, OUT)
+        val b by param(P4.packet_in)
+        val p by param(::Parsed_packet, P4.OUT)
 
         val parse_ipv4 by state {
           call(b, "extract", p.ip)
-          transition(accept)
+          transition(P4.accept)
         }
 
         @Suppress("UnusedPrivateProperty")
         val start by state {
           call(b, "extract", p.ethernet.expr)
-          select(p.ethernet.etherType) { lit(0x0800) to parse_ipv4 }
+          select(p.ethernet.etherType) { P4.lit(0x0800) to parse_ipv4 }
         }
       }
     }

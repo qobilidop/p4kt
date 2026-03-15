@@ -7,9 +7,9 @@ class P4StatementTest {
   @Test
   fun varDeclWithInit() {
     val fn =
-      p4Function("test", void_) {
-        val x by param(bit(8), IN)
-        val tmp by varDecl(bit(8), x)
+      p4Function("test", P4.void_) {
+        val x by param(P4.bit(8), P4.IN)
+        val tmp by varDecl(P4.bit(8), x)
       }
 
     assertEquals(
@@ -26,8 +26,8 @@ class P4StatementTest {
   @Test
   fun varDeclWithoutInit() {
     val fn =
-      p4Function("test", void_) {
-        val tmp by varDecl(bit(8))
+      p4Function("test", P4.void_) {
+        val tmp by varDecl(P4.bit(8))
       }
 
     assertEquals(
@@ -44,10 +44,10 @@ class P4StatementTest {
   @Test
   fun assignment() {
     val fn =
-      p4Function("swap", void_) {
-        val x by param(bit(8), INOUT)
-        val y by param(bit(8), INOUT)
-        val tmp by varDecl(bit(8), x)
+      p4Function("swap", P4.void_) {
+        val x by param(P4.bit(8), P4.INOUT)
+        val y by param(P4.bit(8), P4.INOUT)
+        val tmp by varDecl(P4.bit(8), x)
         assign(x, y)
         assign(y, tmp)
       }
@@ -68,9 +68,9 @@ class P4StatementTest {
   @Test
   fun ifStatement() {
     val fn =
-      p4Function("test", void_) {
-        val x by param(bit(8), IN)
-        if_(x eq lit(0)) { return_(lit(1)) }
+      p4Function("test", P4.void_) {
+        val x by param(P4.bit(8), P4.IN)
+        if_(x eq P4.lit(0)) { return_(P4.lit(1)) }
       }
 
     assertEquals(
@@ -89,9 +89,9 @@ class P4StatementTest {
   @Test
   fun ifElseStatement() {
     val fn =
-      p4Function("max", bit(8)) {
-        val a by param(bit(8), IN)
-        val b by param(bit(8), IN)
+      p4Function("max", P4.bit(8)) {
+        val a by param(P4.bit(8), P4.IN)
+        val b by param(P4.bit(8), P4.IN)
         if_(a eq b) { return_(a) }.else_ { return_(b) }
       }
 
@@ -147,9 +147,9 @@ class P4StatementTest {
   @Test
   fun verifyDsl() {
     val fn =
-      p4Function("test", void_) {
-        val x by param(bit(4), IN)
-        verify(x eq lit(4, 4), error_("BadVersion"))
+      p4Function("test", P4.void_) {
+        val x by param(P4.bit(4), P4.IN)
+        verify(x eq P4.lit(4, 4), P4.error_("BadVersion"))
       }
     assertEquals(
       """
@@ -170,7 +170,7 @@ class P4StatementTest {
 
   @Test
   fun functionCallDsl() {
-    val fn = p4Function("test", void_) { call("Drop_action") }
+    val fn = p4Function("test", P4.void_) { call("Drop_action") }
     assertEquals(
       """
             function void test() {
@@ -185,9 +185,9 @@ class P4StatementTest {
   @Test
   fun nestedIfInFunction() {
     val fn =
-      p4Function("test", void_) {
-        val x by param(bit(8), IN)
-        if_(x eq lit(0)) { if_(x ne lit(1)) { return_(x) } }
+      p4Function("test", P4.void_) {
+        val x by param(P4.bit(8), P4.IN)
+        if_(x eq P4.lit(0)) { if_(x ne P4.lit(1)) { return_(x) } }
       }
 
     assertEquals(
