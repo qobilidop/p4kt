@@ -36,7 +36,26 @@ fun BinOpKind.toP4(): String =
 fun P4Statement.toP4(): String =
   when (this) {
     is P4Statement.Return -> "return ${expr.toP4()};"
+    is P4Statement.VarDecl ->
+      if (init != null) {
+        "${type.toP4()} $name = ${init.toP4()};"
+      } else {
+        "${type.toP4()} $name;"
+      }
+    is P4Statement.Assign -> "${target.toP4()} = ${value.toP4()};"
+    is P4Statement.If -> {
+      val thenStr = indentBlock(thenBody, "    ")
+      if (elseBody.isEmpty()) {
+        "if (${condition.toP4()}) {\n$thenStr\n}"
+      } else {
+        val elseStr = indentBlock(elseBody, "    ")
+        "if (${condition.toP4()}) {\n$thenStr\n} else {\n$elseStr\n}"
+      }
+    }
   }
+
+fun indentBlock(statements: List<P4Statement>, indent: String): String =
+  statements.joinToString("\n") { stmt -> stmt.toP4().lines().joinToString("\n") { "$indent$it" } }
 
 fun P4Field.toP4(): String = "${type.toP4()} $name;"
 
@@ -54,7 +73,7 @@ fun P4Struct.toP4(): String {
 
 fun P4Function.toP4(): String {
   val paramStr = params.joinToString(", ") { it.toP4() }
-  val bodyStr = body.joinToString("\n") { "    ${it.toP4()}" }
+  val bodyStr = indentBlock(body, "    ")
   return "function ${returnType.toP4()} $name($paramStr) {\n$bodyStr\n}"
 }
 

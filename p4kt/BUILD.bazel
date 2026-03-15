@@ -87,3 +87,14 @@ kt_jvm_test(
         "@maven//:org_jetbrains_kotlin_kotlin_test_junit",
     ],
 )
+
+kt_jvm_test(
+    name = "P4StatementTest",
+    srcs = ["P4StatementTest.kt"],
+    test_class = "p4kt.P4StatementTest",
+    deps = [
+        ":p4kt",
+        "@maven//:org_jetbrains_kotlin_kotlin_test",
+        "@maven//:org_jetbrains_kotlin_kotlin_test_junit",
+    ],
+)

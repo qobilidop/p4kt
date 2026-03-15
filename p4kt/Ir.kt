@@ -38,6 +38,16 @@ enum class BinOpKind {
 
 sealed class P4Statement {
   data class Return(val expr: P4Expr) : P4Statement()
+
+  data class VarDecl(val name: String, val type: P4Type, val init: P4Expr?) : P4Statement()
+
+  data class Assign(val target: P4Expr, val value: P4Expr) : P4Statement()
+
+  data class If(
+    val condition: P4Expr,
+    val thenBody: List<P4Statement>,
+    val elseBody: List<P4Statement>,
+  ) : P4Statement()
 }
 
 data class P4Field(val name: String, val type: P4Type)

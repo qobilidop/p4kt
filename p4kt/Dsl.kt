@@ -27,9 +27,55 @@ infix fun P4Expr.eq(other: P4Expr) = P4Expr.BinOp(BinOpKind.EQ, this, other)
 
 infix fun P4Expr.ne(other: P4Expr) = P4Expr.BinOp(BinOpKind.NE, this, other)
 
-class FunctionBuilder(private val name: String, private val returnType: P4Type) {
+open class StatementBuilder {
+  protected val body = mutableListOf<P4Statement>()
+
+  fun varDecl(type: P4Type, init: P4Expr? = null) = VarDeclDelegate(body, type, init)
+
+  fun assign(target: P4Expr, value: P4Expr) {
+    body.add(P4Statement.Assign(target, value))
+  }
+
+  fun if_(condition: P4Expr, block: StatementBuilder.() -> Unit): IfBuilder {
+    val thenBuilder = StatementBuilder()
+    thenBuilder.block()
+    body.add(P4Statement.If(condition, thenBuilder.statements(), emptyList()))
+    return IfBuilder(body, body.size - 1)
+  }
+
+  fun return_(expr: P4Expr) {
+    body.add(P4Statement.Return(expr))
+  }
+
+  fun statements() = body.toList()
+}
+
+class VarDeclDelegate(
+  private val body: MutableList<P4Statement>,
+  private val type: P4Type,
+  private val init: P4Expr?,
+) {
+  operator fun provideDelegate(
+    thisRef: Any?,
+    property: kotlin.reflect.KProperty<*>,
+  ): ReadOnlyProperty<Any?, P4Expr.Ref> {
+    body.add(P4Statement.VarDecl(property.name, type, init))
+    return ReadOnlyProperty { _, _ -> P4Expr.Ref(property.name) }
+  }
+}
+
+class IfBuilder(private val parentBody: MutableList<P4Statement>, private val index: Int) {
+  infix fun else_(block: StatementBuilder.() -> Unit) {
+    val elseBuilder = StatementBuilder()
+    elseBuilder.block()
+    val oldIf = parentBody[index] as P4Statement.If
+    parentBody[index] = oldIf.copy(elseBody = elseBuilder.statements())
+  }
+}
+
+class FunctionBuilder(private val name: String, private val returnType: P4Type) :
+  StatementBuilder() {
   private val params = mutableListOf<P4Param>()
-  private val body = mutableListOf<P4Statement>()
 
   fun param(type: P4Type, direction: Direction): ReadOnlyProperty<Any?, P4Expr.Ref> {
     var registered = false
@@ -40,10 +86,6 @@ class FunctionBuilder(private val name: String, private val returnType: P4Type) 
       }
       P4Expr.Ref(property.name)
     }
-  }
-
-  fun return_(expr: P4Expr) {
-    body.add(P4Statement.Return(expr))
   }
 
   fun build() = P4Function(name, returnType, params, body)
