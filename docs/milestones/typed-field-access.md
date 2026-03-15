@@ -52,7 +52,7 @@ abstract class HeaderRef(expr: P4Expr) : StructRef(expr)
 Users define P4 types as Kotlin classes:
 
 ```kotlin
-class Ipv4H(base: P4Expr) : HeaderRef(base) {
+class Ipv4_h(base: P4Expr) : HeaderRef(base) {
     val ttl by field(bit(8))
     val srcAddr by field(IPv4Address)
     val dstAddr by field(IPv4Address)
@@ -63,15 +63,15 @@ class OutControl(base: P4Expr) : StructRef(base) {
 }
 ```
 
-These are local classes inside `p4Program { }`, keeping everything in one scope.
+These are local classes inside `p4Program { }`, keeping everything in one scope. Class names use P4-style naming conventions (e.g., `Ipv4_h` not `Ipv4H`) since the class name becomes the P4 type name.
 
 ### Field delegates
 
 Two delegate types:
 
-**`FieldDelegate`** - for leaf fields (bit types, typedefs). Uses `provideDelegate` to capture the property name. `getValue` returns `P4Expr.FieldAccess(expr, fieldName)`. Also records `P4Field(name, type)` metadata on the ref instance for IR generation.
+**`FieldDelegate`** - for leaf fields (bit types, typedefs). Uses `provideDelegate` to capture the property name. `getValue` returns `P4Expr.FieldAccess(expr, fieldName)`. Also appends `P4Field(name, type)` to a `MutableList<P4Field>` on the `StructRef` base class for IR generation.
 
-**`TypedFieldDelegate<T>`** - for nested struct/header fields. `getValue` returns `T(P4Expr.FieldAccess(expr, fieldName))`, enabling chained access like `headers.ip.ttl`.
+**`TypedFieldDelegate<T>`** - for nested struct/header fields. Instantiates `T` via reflection (`T::class.constructors.first().call(fieldAccessExpr)`). `getValue` returns the `T` instance wrapping `P4Expr.FieldAccess(expr, fieldName)`, enabling chained access like `headers.ip.ttl`. All three sites that instantiate ref classes via reflection - `TypedFieldDelegate`, `TypedParamDelegate`, and `struct<T>()`/`header<T>()` - share the same mechanism and must be validated together in a spike.
 
 ### Typed params
 
@@ -82,6 +82,7 @@ inline fun <reified T : StructRef> param(direction: Direction? = null): TypedPar
 ```
 
 `TypedParamDelegate<T>` does two things in `provideDelegate`:
+
 1. Adds `P4Param(name, P4Type.Named(T::class.simpleName!!), direction)` to the params list.
 2. Returns `T(P4Expr.Ref(name))` via reflection.
 
@@ -98,9 +99,17 @@ class OutControl(base: P4Expr) : StructRef(base) {
 struct<OutControl>()
 ```
 
-`struct<T>()` and `header<T>()` instantiate the class with a dummy expression, collect the field metadata recorded by the delegates, and emit a `P4Struct` or `P4Header` IR node.
+`struct<T>()` and `header<T>()` instantiate the class with a dummy expression (e.g., `P4Expr.Ref("")`), which triggers all field delegates to run and populate the `fields` list on the `StructRef`. The function then reads that list and emits a `P4Struct` or `P4Header` IR node with `T::class.simpleName!!` as the type name.
 
 This is preferred over auto-registration because it's explicit and predictable, mirroring P4 where type declarations are explicit.
+
+### DSL API additions
+
+Beyond the new ref class infrastructure, several existing DSL functions gain `P4TypeReference` overloads so that typedef/header/struct declarations can be passed directly instead of calling `.typeRef`:
+
+- `param(type: P4TypeReference)` and `param(type: P4TypeReference, direction: Direction)` - for leaf-type params like `val port by param(PortId)`.
+- `const_(type: P4TypeReference, value: P4Expr)` - for const declarations like `val DROP_PORT by const_(PortId, lit(4, 0xF))`.
+- `ref(name: String)` - convenience function for `P4Expr.Ref(name)`, for referencing variables not defined in the current scope.
 
 ### Unchanged constructs
 
@@ -113,6 +122,7 @@ This is preferred over auto-registration because it's explicit and predictable, 
 ### Using ref expressions in statements
 
 `StructRef` instances need to be usable wherever `P4Expr` is expected (e.g., in `assign()`, `operator fun minus`). Options:
+
 - Implicit conversion via `expr` property: `assign(outCtrl.expr, ...)` - explicit but verbose.
 - Overloads on `StatementBuilder` that accept `StructRef` and unwrap to `expr` - cleaner at call sites.
 - Make `StructRef` implement an interface that `assign()` accepts.
@@ -156,12 +166,12 @@ val program = p4Program {
     val IPv4Address by typedef(bit(32))
     val DROP_PORT by const_(PortId, lit(4, 0xF))
 
-    class Ipv4H(base: P4Expr) : HeaderRef(base) {
+    class Ipv4_h(base: P4Expr) : HeaderRef(base) {
         val ttl by field(bit(8))
         val srcAddr by field(IPv4Address)
         val dstAddr by field(IPv4Address)
     }
-    header<Ipv4H>()
+    header<Ipv4_h>()
 
     class OutControl(base: P4Expr) : StructRef(base) {
         val outputPort by field(PortId)
@@ -171,7 +181,7 @@ val program = p4Program {
     val Set_nhop by action {
         val ipv4_dest by param(IPv4Address)
         val port by param(PortId)
-        val headers_ip by param<Ipv4H>(INOUT)
+        val headers_ip by param<Ipv4_h>(INOUT)
         val outCtrl by param<OutControl>(INOUT)
         assign(ref("nextHop"), ipv4_dest)
         assign(headers_ip.ttl, headers_ip.ttl - lit(1))
