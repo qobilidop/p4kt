@@ -108,10 +108,14 @@ User code (DSL) → IR (immutable data classes) → Renderer (P4 source text)
 
 ## Future ideas
 
-### Architecture as a library
+### @DslMarker annotation
 
-The VSS architecture (`very_simple_model.p4`) should be expressible as a P4kt library - a Kotlin package that provides pre-defined declarations. This validates the design where:
+Add a custom `@DslMarker` annotation to prevent accidental scope leakage in nested DSL blocks (e.g., calling `param()` from the wrong nesting level). Every major Kotlin DSL project uses one (kotlinx.html, Ktor, Compose, protobuf-kotlin, etc.).
 
-- `core.p4` built-ins are part of P4kt core
-- Architecture definitions are P4kt libraries using Kotlin's package system
-- Users import architecture libraries like any other Kotlin dependency
+### Internal IR visibility
+
+Make IR types (`P4Type`, `P4Expr`, `P4Statement`, etc.) internal. The design says "IR is an internal implementation detail," but these types are currently public. Enforce the boundary when multi-module support is added.
+
+### Namespace factory functions under P4 object
+
+Move top-level factory functions (`p4Program`, `p4Action`, `p4Control`, etc.) into the `P4` object (e.g., `P4.program {}`, `P4.action {}`). This avoids polluting the package namespace and is consistent with how users already use `P4.bit()`, `P4.ref()`, etc.

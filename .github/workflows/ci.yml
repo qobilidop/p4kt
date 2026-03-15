@@ -34,3 +34,8 @@ jobs:
         with:
           cacheFrom: ghcr.io/qobilidop/p4kt-devcontainer
           runCmd: bazel test //...
+      - name: Gradle test
+        uses: devcontainers/ci@v0.3
+        with:
+          cacheFrom: ghcr.io/qobilidop/p4kt-devcontainer
+          runCmd: gradle test

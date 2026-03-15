@@ -54,12 +54,28 @@ Build the site to `site/`:
 
 ### Build
 
+Bazel:
+
 ```sh
 ./dev bazel build //...
 ```
 
+Gradle:
+
+```sh
+./dev gradle build
+```
+
 ### Test
+
+Bazel:
 
 ```sh
 ./dev bazel test //...
+```
+
+Gradle:
+
+```sh
+./dev gradle test
 ```

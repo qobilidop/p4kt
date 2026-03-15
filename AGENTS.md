@@ -22,20 +22,21 @@
 
 ## Build
 
-- Bazel with Bzlmod. See `docs/dev.md` for commands.
-- `kt_jvm_test` uses JUnit 4 runner. Use `kotlin-test-junit` (not junit5).
+- Dual build system: Bazel (with Bzlmod) and Gradle. See `docs/dev.md` for commands.
+- `kt_jvm_test` / `tasks.test` uses JUnit 4 runner. Use `kotlin-test-junit` (not junit5).
 - No lock files checked in for now (solo project). Re-add when collaborators join.
 
 ## Project layout
 
-- Follow Google/Bazel conventions: flat, package-per-feature layout.
-- Co-locate tests with the source they test in the same package.
+- Follow Gradle conventions: `src/main/kotlin/` for source, `src/test/kotlin/` for tests.
+- The `examples` module uses a flat layout (source files in the module root).
 - Development uses devcontainer. See `docs/dev.md`.
 
 ## Quality checks
 
 - Run `./dev lint` before committing. Fix all lint errors before the commit.
 - Run `./dev bazel test //...` to verify no regressions before committing.
+- Run `./dev gradle test` to verify Gradle build also passes.
 
 ## Commit style
 
