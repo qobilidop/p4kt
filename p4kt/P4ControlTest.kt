@@ -44,7 +44,7 @@ class P4ControlTest {
       val outputPort by field(bit(4))
     }
 
-    val IPv4Address = P4Typedef("IPv4Address", bit(32))
+    @Suppress("VariableNaming") val IPv4Address = P4Typedef("IPv4Address", bit(32))
 
     val ctrl =
       p4Control("TopPipe") {
@@ -52,7 +52,7 @@ class P4ControlTest {
 
         val Drop_action by action { assign(outCtrl.outputPort, ref("DROP_PORT")) }
 
-        @Suppress("VariableNaming") val nextHop by varDecl(IPv4Address)
+        @Suppress("UnusedPrivateProperty", "VariableNaming") val nextHop by varDecl(IPv4Address)
 
         val ipv4_match by table {
           key(P4Expr.FieldAccess(P4Expr.Ref("headers"), "dstAddr"), LPM)
@@ -82,9 +82,11 @@ class P4ControlTest {
     val program = p4Program {
       struct(::OutControl)
 
+      @Suppress("UnusedPrivateProperty")
       val TopPipe by control {
         val outCtrl by param(::OutControl, OUT)
 
+        @Suppress("UnusedPrivateProperty")
         val Drop by action { assign(outCtrl.outputPort, lit(4, 0xF)) }
 
         apply { if_(outCtrl.outputPort eq lit(4, 0xF)) { return_() } }

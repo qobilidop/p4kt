@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package p4kt
 
 fun P4Type.toP4(): String =

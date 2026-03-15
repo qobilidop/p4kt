@@ -252,6 +252,7 @@ class TableBuilder {
     this.size = size
   }
 
+  @Suppress("FunctionParameterNaming")
   fun defaultAction(action: P4Action, const_: Boolean = false) {
     defaultAction = action.name
     isDefaultActionConst = const_
