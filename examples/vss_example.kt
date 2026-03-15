@@ -2,7 +2,7 @@ package p4kt.examples
 
 import p4kt.*
 
-// Corresponds to the supported subset of:
+// Corresponds to:
 // https://github.com/p4lang/p4c/blob/main/testdata/p4_16_samples/vss-example.p4
 
 fun main() {
@@ -43,13 +43,55 @@ fun main() {
     }
     struct(::Parsed_packet)
 
+    class InControl(base: P4Expr) : StructRef(base) {
+      val inputPort by field(PortId)
+    }
+    struct(::InControl)
+
     class OutControl(base: P4Expr) : StructRef(base) {
       val outputPort by field(PortId)
     }
     struct(::OutControl)
 
+    @Suppress("UnusedPrivateProperty")
+    val Ck16 by extern {
+      constructor_()
+      method("clear", void_)
+      method("update", void_) {
+        val data by param(typeName("T"), IN)
+      }
+      method("get", bit(16))
+    }
+
+    errors("IPv4OptionsNotSupported", "IPv4IncorrectVersion", "IPv4ChecksumError")
+
+    @Suppress("UnusedPrivateProperty")
+    val TopParser by parser {
+      val b by param(packet_in)
+      val p by param(::Parsed_packet, OUT)
+      val ck by externInstance(Ck16)
+
+      val parse_ipv4 by state {
+        call(b, "extract", p.ip)
+        verify(p.ip.version eq lit(4, 4), error_("IPv4IncorrectVersion"))
+        verify(p.ip.ihl eq lit(4, 5), error_("IPv4OptionsNotSupported"))
+        call(ck, "clear")
+        call(ck, "update", p.ip)
+        verify(ck.call("get") eq lit(16, 0), error_("IPv4ChecksumError"))
+        transition(accept)
+      }
+
+      val start by state {
+        call(b, "extract", p.ethernet)
+        select(p.ethernet.etherType) { lit(0x0800) to parse_ipv4 }
+      }
+    }
+
+    @Suppress("UnusedPrivateProperty")
     val TopPipe by control {
       val headers by param(::Parsed_packet, INOUT)
+      val parseError by param(errorType, IN)
+      val inCtrl by param(::InControl, IN)
       val outCtrl by param(::OutControl, OUT)
 
       val Drop_action by action { assign(outCtrl.outputPort, DROP_PORT) }
@@ -76,7 +118,8 @@ fun main() {
       val check_ttl by table {
         key(headers.ip.ttl, EXACT)
         actions(Send_to_cpu)
-        defaultAction(Send_to_cpu, const_ = true)
+        actionByName("NoAction")
+        defaultAction("NoAction", const_ = true)
       }
 
       val Set_dmac by action {
@@ -104,6 +147,11 @@ fun main() {
       }
 
       apply {
+        if_(parseError ne error_("NoError")) {
+          call("Drop_action")
+          return_()
+        }
+
         ipv4_match.apply_()
         if_(outCtrl.outputPort eq DROP_PORT) { return_() }
 
@@ -116,6 +164,26 @@ fun main() {
         smac.apply_()
       }
     }
+
+    @Suppress("UnusedPrivateProperty")
+    val TopDeparser by control {
+      val p by param(::Parsed_packet, INOUT)
+      val b by param(packet_out)
+      val ck by externInstance(Ck16)
+
+      apply {
+        call(b, "emit", p.ethernet)
+        if_(p.ip.call("isValid")) {
+          call(ck, "clear")
+          assign(p.ip.hdrChecksum, lit(16, 0))
+          call(ck, "update", p.ip)
+          assign(p.ip.hdrChecksum, ck.call("get"))
+        }
+        call(b, "emit", p.ip)
+      }
+    }
+
+    packageInstance("VSS", "main", "TopParser", "TopPipe", "TopDeparser")
   }
   println(program.toP4())
 }

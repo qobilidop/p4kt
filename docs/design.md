@@ -36,7 +36,7 @@ User code (DSL) → IR (immutable data classes) → Renderer (P4 source text)
 | `typedef`       | `typedef bit<48> EthernetAddress`        | Done   |
 | `header`        | `header Ethernet_h { ... }`              | Done   |
 | `struct`        | `struct Parsed_packet { ... }`           | Done   |
-| `error`         | `error { IPv4OptionsNotSupported, ... }` | Todo   |
+| `error`         | `error { IPv4OptionsNotSupported, ... }` | Done   |
 | type parameters | `<H>`, `<T>`                             | Todo   |
 
 ### Declarations
@@ -48,11 +48,11 @@ User code (DSL) → IR (immutable data classes) → Renderer (P4 source text)
 | action                | `action Set_nhop(...) { ... }`                            | Done   |
 | table                 | `table ipv4_match { key, actions, size, default_action }` | Done   |
 | control               | `control TopPipe(...) { ... apply { ... } }`              | Done   |
-| parser                | `parser TopParser(...) { state start { ... } }`           | Todo   |
-| extern declaration    | `extern Ck16 { void clear(); ... }`                       | Todo   |
-| extern instantiation  | `Ck16() ck;`                                              | Todo   |
+| parser                | `parser TopParser(...) { state start { ... } }`           | Done   |
+| extern declaration    | `extern Ck16 { void clear(); ... }`                       | Done   |
+| extern instantiation  | `Ck16() ck;`                                              | Done   |
 | package declaration   | `package VSS<H>(...)`                                     | Todo   |
-| package instantiation | `VSS(...) main;`                                          | Todo   |
+| package instantiation | `VSS(...) main;`                                          | Done   |
 
 ### Expressions
 
@@ -63,7 +63,7 @@ User code (DSL) → IR (immutable data classes) → Renderer (P4 source text)
 | field access        | `headers.ip.dstAddr`                  | Done   |
 | arithmetic          | `headers.ip.ttl - 1`                  | Done   |
 | comparison          | `p.ip.version == 4w4`                 | Done   |
-| method calls        | `b.extract(p.ethernet)`, `ck.clear()` | Todo   |
+| method calls        | `b.extract(p.ethernet)`, `ck.clear()` | Done   |
 
 ### Statements
 
@@ -74,17 +74,17 @@ User code (DSL) → IR (immutable data classes) → Renderer (P4 source text)
 | return                | `return;`                                                          | Done   |
 | variable declaration  | `bit<8> tmp = x`                                                   | Done   |
 | method call statement | `ipv4_match.apply()`                                               | Done   |
-| transition            | `transition select(...) { ... }`                                   | Todo   |
-| transition select     | `transition select(p.ethernet.etherType) { 0x0800 : parse_ipv4; }` | Todo   |
+| transition            | `transition select(...) { ... }`                                   | Done   |
+| transition select     | `transition select(p.ethernet.etherType) { 0x0800 : parse_ipv4; }` | Done   |
 
 ### Parser-specific
 
 | Construct  | Example from VSS                                          | Status |
 | ---------- | --------------------------------------------------------- | ------ |
-| state      | `state start { ... }`                                     | Todo   |
-| extract    | `b.extract(p.ethernet)`                                   | Todo   |
-| verify     | `verify(p.ip.version == 4w4, error.IPv4IncorrectVersion)` | Todo   |
-| transition | `transition accept` / `transition select(...)`            | Todo   |
+| state      | `state start { ... }`                                     | Done   |
+| extract    | `b.extract(p.ethernet)`                                   | Done   |
+| verify     | `verify(p.ip.version == 4w4, error.IPv4IncorrectVersion)` | Done   |
+| transition | `transition accept` / `transition select(...)`            | Done   |
 
 ### Table-specific
 

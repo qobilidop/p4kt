@@ -34,11 +34,47 @@ struct Parsed_packet {
     Ipv4_h ip;
 }
 
+struct InControl {
+    PortId inputPort;
+}
+
 struct OutControl {
     PortId outputPort;
 }
 
-control TopPipe(inout Parsed_packet headers, out OutControl outCtrl) {
+extern Ck16 {
+    Ck16();
+    void clear();
+    void update(in T data);
+    bit<16> get();
+}
+
+error {
+    IPv4OptionsNotSupported,
+    IPv4IncorrectVersion,
+    IPv4ChecksumError
+}
+
+parser TopParser(packet_in b, out Parsed_packet p) {
+    Ck16() ck;
+    state start {
+        b.extract(p.ethernet);
+        transition select(p.ethernet.etherType) {
+            2048 : parse_ipv4;
+        }
+    }
+    state parse_ipv4 {
+        b.extract(p.ip);
+        verify(p.ip.version == 4w4, error.IPv4IncorrectVersion);
+        verify(p.ip.ihl == 4w5, error.IPv4OptionsNotSupported);
+        ck.clear();
+        ck.update(p.ip);
+        verify(ck.get() == 16w0, error.IPv4ChecksumError);
+        transition accept;
+    }
+}
+
+control TopPipe(inout Parsed_packet headers, in error parseError, in InControl inCtrl, out OutControl outCtrl) {
     action Drop_action() {
         outCtrl.outputPort = DROP_PORT;
     }
@@ -64,8 +100,9 @@ control TopPipe(inout Parsed_packet headers, out OutControl outCtrl) {
         key = { headers.ip.ttl : exact; }
         actions = {
             Send_to_cpu;
+            NoAction;
         }
-        const default_action = Send_to_cpu;
+        const default_action = NoAction;
     }
     action Set_dmac(EthernetAddress dmac) {
         headers.ethernet.dstAddr = dmac;
@@ -92,6 +129,10 @@ control TopPipe(inout Parsed_packet headers, out OutControl outCtrl) {
         default_action = Drop_action;
     }
     apply {
+        if (parseError != error.NoError) {
+            Drop_action();
+            return;
+        }
         ipv4_match.apply();
         if (outCtrl.outputPort == DROP_PORT) {
             return;
@@ -107,3 +148,19 @@ control TopPipe(inout Parsed_packet headers, out OutControl outCtrl) {
         smac.apply();
     }
 }
+
+control TopDeparser(inout Parsed_packet p, packet_out b) {
+    Ck16() ck;
+    apply {
+        b.emit(p.ethernet);
+        if (p.ip.isValid()) {
+            ck.clear();
+            p.ip.hdrChecksum = 16w0;
+            ck.update(p.ip);
+            p.ip.hdrChecksum = ck.get();
+        }
+        b.emit(p.ip);
+    }
+}
+
+VSS(TopParser(), TopPipe(), TopDeparser()) main;

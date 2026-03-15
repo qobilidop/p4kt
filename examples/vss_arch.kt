@@ -27,6 +27,16 @@ fun main() {
     val DROP_PORT by const_(PortId, lit(4, 0xF))
     val CPU_OUT_PORT by const_(PortId, lit(4, 0xE))
     val RECIRCULATE_OUT_PORT by const_(PortId, lit(4, 0xD))
+
+    @Suppress("UnusedPrivateProperty")
+    val Ck16 by extern {
+      constructor_()
+      method("clear", void_)
+      method("update", void_) {
+        val data by param(typeName("T"), IN)
+      }
+      method("get", bit(16))
+    }
   }
   println(program.toP4())
 }

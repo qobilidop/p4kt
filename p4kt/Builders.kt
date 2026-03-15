@@ -240,6 +240,8 @@ class ControlBuilder : StatementBuilder() {
   private val params = mutableListOf<P4Param>()
   private val declarations = mutableListOf<P4Declaration>()
 
+  fun param(type: P4Type) = ParamDelegate(params, type)
+
   fun param(type: P4Type, direction: Direction) = ParamDelegate(params, type, direction)
 
   fun param(type: P4TypeReference, direction: Direction) =

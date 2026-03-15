@@ -47,6 +47,9 @@ infix fun P4Expr.ne(other: P4Expr) = P4Expr.BinOp(BinOpKind.NE, this, other)
 fun P4Expr.call(method: String, vararg args: P4Expr) =
   P4Expr.MethodCall(this, method, args.toList())
 
+fun StructRef.call(method: String, vararg args: P4Expr) =
+  P4Expr.MethodCall(this.expr, method, args.toList())
+
 fun error_(name: String) = P4Expr.ErrorMember(name)
 
 // Statement builder
@@ -81,6 +84,14 @@ open class StatementBuilder {
 
   fun call(expr: P4Expr, method: String, vararg args: P4Expr) {
     body.add(P4Statement.MethodCall(expr, method, args.toList()))
+  }
+
+  fun call(obj: StructRef, method: String, vararg args: P4Expr) {
+    call(obj.expr, method, *args)
+  }
+
+  fun call(expr: P4Expr, method: String, arg: StructRef) {
+    body.add(P4Statement.MethodCall(expr, method, listOf(arg.expr)))
   }
 
   fun call(name: String, vararg args: P4Expr) {

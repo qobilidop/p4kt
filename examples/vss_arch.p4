@@ -19,3 +19,10 @@ const PortId DROP_PORT = 4w15;
 const PortId CPU_OUT_PORT = 4w14;
 
 const PortId RECIRCULATE_OUT_PORT = 4w13;
+
+extern Ck16 {
+    Ck16();
+    void clear();
+    void update(in T data);
+    bit<16> get();
+}
