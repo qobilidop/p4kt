@@ -1,6 +1,7 @@
 complexity:
   TooManyFunctions:
     thresholdInFiles: 20
+    thresholdInClasses: 20
 naming:
   PackageNaming:
     packagePattern: '[a-z]+(\.[a-z][A-Za-z0-9]*)*'
