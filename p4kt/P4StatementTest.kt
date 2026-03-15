@@ -163,6 +163,26 @@ class P4StatementTest {
   }
 
   @Test
+  fun functionCallStatement() {
+    val stmt = P4Statement.FunctionCall("Drop_action", emptyList())
+    assertEquals("Drop_action();", stmt.toP4())
+  }
+
+  @Test
+  fun functionCallDsl() {
+    val fn = p4Function("test", void_) { call("Drop_action") }
+    assertEquals(
+      """
+            function void test() {
+                Drop_action();
+            }
+      """
+        .trimIndent(),
+      fn.toP4(),
+    )
+  }
+
+  @Test
   fun nestedIfInFunction() {
     val fn =
       p4Function("test", void_) {

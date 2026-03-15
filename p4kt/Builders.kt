@@ -183,6 +183,10 @@ class TableBuilder {
     actions.addAll(actionRefs.map { it.name })
   }
 
+  fun actionByName(name: String) {
+    actions.add(name)
+  }
+
   fun size(size: Int) {
     this.size = size
   }
@@ -190,6 +194,12 @@ class TableBuilder {
   @Suppress("FunctionParameterNaming")
   fun defaultAction(action: P4Action, const_: Boolean = false) {
     defaultAction = action.name
+    isDefaultActionConst = const_
+  }
+
+  @Suppress("FunctionParameterNaming")
+  fun defaultAction(name: String, const_: Boolean = false) {
+    defaultAction = name
     isDefaultActionConst = const_
   }
 
@@ -464,6 +474,10 @@ class ProgramBuilder {
       },
       register = { declarations.add(it) },
     )
+
+  fun packageInstance(typeName: String, name: String, vararg args: String) {
+    declarations.add(P4PackageInstance(typeName, args.toList(), name))
+  }
 
   fun build() = P4Program(declarations.toList())
 }

@@ -208,6 +208,32 @@ class P4ControlTest {
   }
 
   @Test
+  fun tableWithStringActions() {
+    val dropAction = p4Action("Drop") {}
+    val table =
+      p4Table("check_ttl") {
+        key(P4Expr.Ref("ttl"), EXACT)
+        actions(dropAction)
+        actionByName("NoAction")
+        defaultAction("NoAction", const_ = true)
+      }
+    assertEquals(
+      """
+          table check_ttl {
+              key = { ttl : exact; }
+              actions = {
+                  Drop;
+                  NoAction;
+              }
+              const default_action = NoAction;
+          }
+      """
+        .trimIndent(),
+      table.toP4(),
+    )
+  }
+
+  @Test
   fun controlRendering() {
     val ctrl =
       P4Control(

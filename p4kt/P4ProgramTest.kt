@@ -38,4 +38,18 @@ class P4ProgramTest {
       program.toP4(),
     )
   }
+
+  @Test
+  fun packageInstantiation() {
+    val pkg = P4PackageInstance("VSS", listOf("TopParser", "TopPipe", "TopDeparser"), "main")
+    assertEquals("VSS(TopParser(), TopPipe(), TopDeparser()) main;", pkg.toP4())
+  }
+
+  @Test
+  fun packageInstantiationDsl() {
+    val program = p4Program {
+      packageInstance("VSS", "main", "TopParser", "TopPipe", "TopDeparser")
+    }
+    assertEquals("VSS(TopParser(), TopPipe(), TopDeparser()) main;", program.toP4())
+  }
 }

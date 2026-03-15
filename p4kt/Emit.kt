@@ -81,6 +81,10 @@ fun P4Statement.toP4(): String =
       val casesStr = cases.joinToString("\n") { (expr, state) -> "    ${expr.toP4()} : $state;" }
       "transition select(${expr.toP4()}) {\n$casesStr\n}"
     }
+    is P4Statement.FunctionCall -> {
+      val argsStr = args.joinToString(", ") { it.toP4() }
+      "$name($argsStr);"
+    }
   }
 
 fun indentBlock(statements: List<P4Statement>, indent: String): String =
@@ -170,6 +174,11 @@ fun P4Extern.toP4(): String {
 
 fun P4ExternInstance.toP4(): String = "$typeName() $name;"
 
+fun P4PackageInstance.toP4(): String {
+  val argsStr = args.joinToString(", ") { "$it()" }
+  return "$typeName($argsStr) $name;"
+}
+
 fun P4ParserState.toP4(): String {
   val bodyStr = indentBlock(body, "    ")
   return "state $name {\n$bodyStr\n}"
@@ -209,6 +218,7 @@ fun P4Declaration.toP4(): String =
     is P4Extern -> (this as P4Extern).toP4()
     is P4ExternInstance -> (this as P4ExternInstance).toP4()
     is P4Parser -> (this as P4Parser).toP4()
+    is P4PackageInstance -> (this as P4PackageInstance).toP4()
   }
 
 fun P4Program.toP4(): String = declarations.joinToString("\n\n") { it.toP4() }

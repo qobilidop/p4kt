@@ -83,6 +83,10 @@ open class StatementBuilder {
     body.add(P4Statement.MethodCall(expr, method, args.toList()))
   }
 
+  fun call(name: String, vararg args: P4Expr) {
+    body.add(P4Statement.FunctionCall(name, args.toList()))
+  }
+
   fun verify(condition: P4Expr, error: P4Expr) {
     body.add(P4Statement.Verify(condition, error))
   }

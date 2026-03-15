@@ -68,6 +68,8 @@ sealed class P4Statement {
 
   data class TransitionSelect(val expr: P4Expr, val cases: List<Pair<P4Expr, String>>) :
     P4Statement()
+
+  data class FunctionCall(val name: String, val args: List<P4Expr>) : P4Statement()
 }
 
 data class P4Field(val name: String, val type: P4Type)
@@ -151,5 +153,8 @@ data class P4Parser(
   val declarations: List<P4Declaration>,
   val states: List<P4ParserState>,
 ) : P4Declaration
+
+data class P4PackageInstance(val typeName: String, val args: List<String>, val name: String) :
+  P4Declaration
 
 data class P4Program(val declarations: List<P4Declaration>)
