@@ -49,7 +49,7 @@ class P4RefTest {
 
   @Test
   fun fieldAcceptsTypeReference() {
-    val PortId = P4Typedef("PortId", bit(4))
+    @Suppress("VariableNaming") val PortId = P4Typedef("PortId", bit(4))
 
     class OutControl(base: P4Expr) : StructRef(base) {
       val outputPort by field(PortId)
@@ -104,7 +104,7 @@ class P4RefTest {
 
   @Test
   fun paramAcceptsTypeReference() {
-    val PortId = P4Typedef("PortId", bit(4))
+    @Suppress("VariableNaming") val PortId = P4Typedef("PortId", bit(4))
 
     val a =
       p4Action("Set") {
@@ -125,7 +125,7 @@ class P4RefTest {
 
   @Test
   fun paramAcceptsTypeReferenceWithDirection() {
-    val PortId = P4Typedef("PortId", bit(4))
+    @Suppress("VariableNaming") val PortId = P4Typedef("PortId", bit(4))
 
     val a =
       p4Action("Set") {
