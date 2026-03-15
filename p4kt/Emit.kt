@@ -44,3 +44,13 @@ fun P4Function.toP4(): String {
   val bodyStr = body.joinToString("\n") { "    ${it.toP4()}" }
   return "function ${returnType.toP4()} $name($paramStr) {\n$bodyStr\n}"
 }
+
+fun P4Declaration.toP4(): String =
+  when (this) {
+    is P4Function -> (this as P4Function).toP4()
+    is P4Typedef -> (this as P4Typedef).toP4()
+    is P4Header -> (this as P4Header).toP4()
+    is P4Struct -> (this as P4Struct).toP4()
+  }
+
+fun P4Program.toP4(): String = declarations.joinToString("\n\n") { it.toP4() }

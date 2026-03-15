@@ -61,3 +61,39 @@ fun p4Function(name: String, returnType: P4Type, block: FunctionBuilder.() -> Un
   builder.block()
   return builder.build()
 }
+
+class ProgramBuilder {
+  private val declarations = mutableListOf<P4Declaration>()
+
+  fun typedef(name: String, type: P4Type): P4Typedef {
+    val decl = p4Typedef(name, type)
+    declarations.add(decl)
+    return decl
+  }
+
+  fun header(name: String, block: FieldsBuilder.() -> Unit): P4Header {
+    val decl = p4Header(name, block)
+    declarations.add(decl)
+    return decl
+  }
+
+  fun struct(name: String, block: FieldsBuilder.() -> Unit): P4Struct {
+    val decl = p4Struct(name, block)
+    declarations.add(decl)
+    return decl
+  }
+
+  fun function(name: String, returnType: P4Type, block: FunctionBuilder.() -> Unit): P4Function {
+    val decl = p4Function(name, returnType, block)
+    declarations.add(decl)
+    return decl
+  }
+
+  fun build() = P4Program(declarations.toList())
+}
+
+fun p4Program(block: ProgramBuilder.() -> Unit): P4Program {
+  val builder = ProgramBuilder()
+  builder.block()
+  return builder.build()
+}

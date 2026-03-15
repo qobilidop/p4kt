@@ -5,18 +5,15 @@ package p4kt.examples
 import p4kt.*
 
 fun main() {
-  val ethernetAddress = p4Typedef("EthernetAddress", bit(48))
-  val ipv4Address = p4Typedef("IPv4Address", bit(32))
-
-  val ethernetH =
-    p4Header("Ethernet_h") {
+  val program = p4Program {
+    typedef("EthernetAddress", bit(48))
+    typedef("IPv4Address", bit(32))
+    header("Ethernet_h") {
       field("dstAddr", typeName("EthernetAddress"))
       field("srcAddr", typeName("EthernetAddress"))
       field("etherType", bit(16))
     }
-
-  val ipv4H =
-    p4Header("Ipv4_h") {
+    header("Ipv4_h") {
       field("version", bit(4))
       field("ihl", bit(4))
       field("diffserv", bit(8))
@@ -30,19 +27,10 @@ fun main() {
       field("srcAddr", typeName("IPv4Address"))
       field("dstAddr", typeName("IPv4Address"))
     }
-
-  val parsedPacket =
-    p4Struct("Parsed_packet") {
+    struct("Parsed_packet") {
       field("ethernet", typeName("Ethernet_h"))
       field("ip", typeName("Ipv4_h"))
     }
-
-  println(ethernetAddress.toP4())
-  println(ipv4Address.toP4())
-  println()
-  println(ethernetH.toP4())
-  println()
-  println(ipv4H.toP4())
-  println()
-  println(parsedPacket.toP4())
+  }
+  println(program.toP4())
 }

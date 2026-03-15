@@ -24,15 +24,19 @@ sealed class P4Statement {
 
 data class P4Field(val name: String, val type: P4Type)
 
-data class P4Typedef(val name: String, val type: P4Type)
+sealed interface P4Declaration
 
-data class P4Header(val name: String, val fields: List<P4Field>)
+data class P4Typedef(val name: String, val type: P4Type) : P4Declaration
 
-data class P4Struct(val name: String, val fields: List<P4Field>)
+data class P4Header(val name: String, val fields: List<P4Field>) : P4Declaration
+
+data class P4Struct(val name: String, val fields: List<P4Field>) : P4Declaration
 
 data class P4Function(
   val name: String,
   val returnType: P4Type,
   val params: List<P4Param>,
   val body: List<P4Statement>,
-)
+) : P4Declaration
+
+data class P4Program(val declarations: List<P4Declaration>)
