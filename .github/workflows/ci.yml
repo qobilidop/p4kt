@@ -12,20 +12,25 @@ jobs:
       - name: Build devcontainer
         uses: devcontainers/ci@v0.3
         with:
+          cacheFrom: ghcr.io/qobilidop/p4kt-devcontainer
           runCmd: echo "Devcontainer ready"
       - name: Format check
         uses: devcontainers/ci@v0.3
         with:
+          cacheFrom: ghcr.io/qobilidop/p4kt-devcontainer
           runCmd: tools/format.sh --check
       - name: Lint
         uses: devcontainers/ci@v0.3
         with:
+          cacheFrom: ghcr.io/qobilidop/p4kt-devcontainer
           runCmd: tools/lint.sh
       - name: Build
         uses: devcontainers/ci@v0.3
         with:
+          cacheFrom: ghcr.io/qobilidop/p4kt-devcontainer
           runCmd: bazel build //...
       - name: Test
         uses: devcontainers/ci@v0.3
         with:
+          cacheFrom: ghcr.io/qobilidop/p4kt-devcontainer
           runCmd: bazel test //...

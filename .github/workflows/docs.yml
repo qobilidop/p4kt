@@ -22,16 +22,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-
-      - run: pip install mkdocs-material==9.6.12
-
       - name: Generate examples page
-        run: tools/generate_examples_doc.sh
+        uses: devcontainers/ci@v0.3
+        with:
+          cacheFrom: ghcr.io/qobilidop/p4kt-devcontainer
+          runCmd: tools/generate_examples_doc.sh
 
-      - run: mkdocs build
+      - name: Build docs
+        uses: devcontainers/ci@v0.3
+        with:
+          cacheFrom: ghcr.io/qobilidop/p4kt-devcontainer
+          runCmd: mkdocs build
 
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -1,5 +1,6 @@
 # P4kt
 
+[![Devcontainer](https://github.com/qobilidop/p4kt/actions/workflows/devcontainer.yml/badge.svg)](https://github.com/qobilidop/p4kt/actions/workflows/devcontainer.yml)
 [![CI](https://github.com/qobilidop/p4kt/actions/workflows/ci.yml/badge.svg)](https://github.com/qobilidop/p4kt/actions/workflows/ci.yml)
 [![Docs](https://github.com/qobilidop/p4kt/actions/workflows/docs.yml/badge.svg)](https://qobilidop.github.io/p4kt/)
 
