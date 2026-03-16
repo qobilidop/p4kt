@@ -28,16 +28,16 @@ User code (DSL) → IR (immutable data classes) → Renderer (P4 source text)
 
 ### Types
 
-| Construct       | Example from VSS                         | Status |
-| --------------- | ---------------------------------------- | ------ |
-| `bit<W>`        | `bit<48>`, `bit<4>`                      | Done   |
-| `bool`          | implicit in conditions                   | Done   |
-| `void`          | action return types                      | Done   |
-| `typedef`       | `typedef bit<48> EthernetAddress`        | Done   |
-| `header`        | `header Ethernet_h { ... }`              | Done   |
-| `struct`        | `struct Parsed_packet { ... }`           | Done   |
-| `error`         | `error { IPv4OptionsNotSupported, ... }` | Done   |
-| type parameters | `<H>`, `<T>`                             | Todo   |
+| Construct       | Example from VSS                         | Status  |
+| --------------- | ---------------------------------------- | ------- |
+| `bit<W>`        | `bit<48>`, `bit<4>`                      | Done    |
+| `bool`          | implicit in conditions                   | Done    |
+| `void`          | action return types                      | Done    |
+| `typedef`       | `typedef bit<48> EthernetAddress`        | Done    |
+| `header`        | `header Ethernet_h { ... }`              | Done    |
+| `struct`        | `struct Parsed_packet { ... }`           | Done    |
+| `error`         | `error { IPv4OptionsNotSupported, ... }` | Done    |
+| type parameters | `<H>`, `<T>`                             | Partial |
 
 ### Declarations
 
@@ -108,6 +108,9 @@ User code (DSL) → IR (immutable data classes) → Renderer (P4 source text)
 - **P4 naming for domain objects**: p4include objects (`core`, `v1model`) and examples (`vss_arch`, `vss_example`) use P4's naming convention (lowercase/snake_case) instead of Kotlin's PascalCase. This follows the precedent set by kotlinx.html and kotlin-css, which break Kotlin naming conventions to match their target domain.
 - **`@P4DslMarker` annotation**: All builder classes used as DSL receivers are annotated with `@P4DslMarker` (a `@DslMarker` annotation). This prevents accidental scope leakage in nested DSL blocks.
 - **Factory functions on `P4` object**: All factory functions (`P4.program {}`, `P4.action {}`, `P4.typedef()`, etc.) live on the `P4` object rather than as top-level functions. This avoids polluting the package namespace and is consistent with how users already use `P4.bit()`, `P4.ref()`, etc.
+- **Delegate-based declarations in Library**: All Library declarations (`typedef`, `const_`, `extern`, `action`, `externFunction`) use Kotlin property delegates to infer names. No string names needed - the Kotlin property name becomes the P4 declaration name.
+- **`P4.ErrorDecl` and `P4.MatchKindDecl`**: Error and match_kind declarations use nested objects with `member()` delegates, enabling IDE navigation (e.g., `core.error.NoError`, `core.match_kind.lpm`). Follows the P4 spec where both are sets of named members in global namespaces.
+- **Method overloads via `overload()`**: P4 allows multiple methods with the same name. Since Kotlin property names must be unique, overloads use `val name2 by overload(original, ...)` which reuses the original method's P4 name. Same pattern for `externFunctionOverload()`.
 
 ## Future ideas
 
