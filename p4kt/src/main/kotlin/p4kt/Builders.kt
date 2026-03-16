@@ -408,6 +408,11 @@ class TypeDeclBuilder {
   fun param(type: P4TypeReference, direction: Direction) =
     ParamDelegate(params, type.typeRef, direction)
 
+  fun <T : P4.StructRef> param(factory: (P4Expr) -> T) = TypedParamDelegate(params, factory)
+
+  fun <T : P4.StructRef> param(factory: (P4Expr) -> T, direction: Direction) =
+    TypedParamDelegate(params, factory, direction)
+
   fun params() = params.toList()
 
   fun typeParams() = typeParams.toList()

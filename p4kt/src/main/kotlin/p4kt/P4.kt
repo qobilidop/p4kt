@@ -121,7 +121,10 @@ data class P4TypeDecl(
   val name: String,
   val typeParams: List<String>,
   val params: List<P4Param>,
-) : P4Declaration
+) : P4Declaration, P4TypeReference {
+  override val typeRef
+    get() = P4Type.Named(name)
+}
 
 data class P4PackageInstance(val typeName: String, val args: List<String>, val name: String) :
   P4Declaration

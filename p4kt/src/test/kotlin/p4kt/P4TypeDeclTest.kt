@@ -3,6 +3,10 @@ package p4kt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+private class TypeDeclTestStruct(base: P4Expr) : P4.StructRef(base) {
+  val f by field(P4.bit(8))
+}
+
 class P4TypeDeclTest {
   @Test
   fun parserTypeDeclaration() {
@@ -46,6 +50,10 @@ class P4TypeDeclTest {
     @Suppress("UnusedPrivateProperty")
     val lib =
       object : P4.Library() {
+        init {
+          struct(::TypeDeclTestStruct)
+        }
+
         val Parser by parserTypeDecl {
           val H by typeParam()
           val b by param(P4.typeName("packet_in"))
@@ -54,19 +62,23 @@ class P4TypeDeclTest {
         val Pipe by controlTypeDecl {
           val H by typeParam()
           val headers by param(H, P4.INOUT)
-          val parseError by param(P4.errorType, P4.IN)
+          val inCtrl by param(::TypeDeclTestStruct, P4.IN)
         }
         val VSS by packageTypeDecl {
           val H by typeParam()
-          val p by param(P4.typeName("Parser"))
-          val map by param(P4.typeName("Pipe"))
+          val p by param(Parser)
+          val map by param(Pipe)
         }
       }
     assertEquals(
       """
+          struct TypeDeclTestStruct {
+              bit<8> f;
+          }
+
           parser Parser<H>(packet_in b, out H parsedHeaders);
 
-          control Pipe<H>(inout H headers, in error parseError);
+          control Pipe<H>(inout H headers, in TypeDeclTestStruct inCtrl);
 
           package VSS<H>(Parser p, Pipe map);
       """

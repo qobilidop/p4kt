@@ -47,8 +47,8 @@ object vss_arch : P4.Library() {
     val H by typeParam()
     val headers by param(H, P4.INOUT)
     val parseError by param(P4.errorType, P4.IN)
-    val inCtrl by param(P4.typeName("InControl"), P4.IN)
-    val outCtrl by param(P4.typeName("OutControl"), P4.OUT)
+    val inCtrl by param(::InControl, P4.IN)
+    val outCtrl by param(::OutControl, P4.OUT)
   }
 
   val Deparser by controlTypeDecl {
@@ -59,9 +59,9 @@ object vss_arch : P4.Library() {
 
   val VSS by packageTypeDecl {
     val H by typeParam()
-    val p by param(P4.typeName("Parser"))
-    val map by param(P4.typeName("Pipe"))
-    val d by param(P4.typeName("Deparser"))
+    val p by param(Parser)
+    val map by param(Pipe)
+    val d by param(Deparser)
   }
 
   val Ck16 by extern {
