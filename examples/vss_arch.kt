@@ -39,7 +39,8 @@ object vss_arch : P4.Library() {
     val clear by method(P4.void_)
     val update by
       method(P4.void_) {
-        val data by param(P4.typeName("T"), P4.IN)
+        val T by typeParam()
+        val data by param(T, P4.IN)
       }
     val get by method(P4.bit(16))
   }

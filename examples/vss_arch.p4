@@ -23,6 +23,6 @@ const PortId RECIRCULATE_OUT_PORT = 4w13;
 extern Ck16 {
     Ck16();
     void clear();
-    void update(in T data);
+    void update<T>(in T data);
     bit<16> get();
 }

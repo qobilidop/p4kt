@@ -5,7 +5,7 @@ Source files are in the [`examples/`](https://github.com/qobilidop/p4kt/tree/mai
 
 ## VSS architecture
 
-The switch architecture declarations from [`very_simple_model.p4`](https://github.com/p4lang/p4c/blob/main/testdata/p4_16_samples/very_simple_model.p4) - typedefs, constants, and struct definitions.
+The switch architecture declarations from [`very_simple_model.p4`](https://github.com/p4lang/p4c/blob/main/testdata/p4_16_samples/very_simple_model.p4) - typedefs, constants, struct definitions, and the `Ck16` extern. Missing features: abstract parser/control/package declarations with type parameters (`parser Parser<H>(...)`, `control Pipe<H>(...)`, `package VSS<H>(...)`).
 
 ## VSS example
 
