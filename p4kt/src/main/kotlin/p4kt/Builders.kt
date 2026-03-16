@@ -392,6 +392,27 @@ class ExternMethodBuilder {
   fun returnType() = returnType
 }
 
+@P4DslMarker
+class TypeDeclBuilder {
+  private val params = mutableListOf<P4Param>()
+  private val typeParams = mutableListOf<String>()
+
+  fun typeParam() = TypeParamDelegate(typeParams)
+
+  fun param(type: P4Type) = ParamDelegate(params, type)
+
+  fun param(type: P4Type, direction: Direction) = ParamDelegate(params, type, direction)
+
+  fun param(type: P4TypeReference) = ParamDelegate(params, type.typeRef)
+
+  fun param(type: P4TypeReference, direction: Direction) =
+    ParamDelegate(params, type.typeRef, direction)
+
+  fun params() = params.toList()
+
+  fun typeParams() = typeParams.toList()
+}
+
 data class MethodRef(val name: String)
 
 class MethodDelegate(

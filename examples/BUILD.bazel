@@ -3,7 +3,10 @@ load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library", "kt_jvm_test")
 kt_jvm_library(
     name = "vss_arch_lib",
     srcs = ["vss_arch.kt"],
-    deps = ["//p4kt"],
+    deps = [
+        "//p4kt",
+        "//p4kt:p4include",
+    ],
 )
 
 kt_jvm_library(

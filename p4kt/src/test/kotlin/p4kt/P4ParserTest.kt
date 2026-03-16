@@ -26,7 +26,7 @@ class P4ParserTest {
         name = "TopParser",
         params =
           listOf(
-            P4Param("b", P4Type.PacketIn, null),
+            P4Param("b", P4Type.Named("packet_in"), null),
             P4Param("p", P4Type.Named("Parsed_packet"), Direction.OUT),
           ),
         declarations = emptyList(),
@@ -52,7 +52,7 @@ class P4ParserTest {
         name = "TopParser",
         params =
           listOf(
-            P4Param("b", P4Type.PacketIn, null),
+            P4Param("b", P4Type.Named("packet_in"), null),
             P4Param("p", P4Type.Named("Parsed_packet"), Direction.OUT),
           ),
         declarations = listOf(P4ExternInstance("Ck16", "ck")),
@@ -159,7 +159,7 @@ class P4ParserTest {
 
         @Suppress("UnusedPrivateProperty")
         val TopParser by parser {
-          val b by param(P4.packet_in)
+          val b by param(P4.typeName("packet_in"))
           val p by param(::Parsed_packet, P4.OUT)
 
           val parse_ipv4 by state {

@@ -1,9 +1,12 @@
+@file:Suppress("UnusedPrivateProperty")
+
 package p4kt.examples
 
 import p4kt.P4
 import p4kt.P4Expr
+import p4kt.p4include.core
 
-// Corresponds to the supported subset of:
+// Corresponds to:
 // https://github.com/p4lang/p4c/blob/main/testdata/p4_16_samples/very_simple_model.p4
 
 object vss_arch : P4.Library() {
@@ -33,6 +36,33 @@ object vss_arch : P4.Library() {
   val DROP_PORT by const_(PortId.typeRef, P4.lit(4, 0xF))
   val CPU_OUT_PORT by const_(PortId.typeRef, P4.lit(4, 0xE))
   val RECIRCULATE_OUT_PORT by const_(PortId.typeRef, P4.lit(4, 0xD))
+
+  val Parser by parserTypeDecl {
+    val H by typeParam()
+    val b by param(core.packet_in)
+    val parsedHeaders by param(H, P4.OUT)
+  }
+
+  val Pipe by controlTypeDecl {
+    val H by typeParam()
+    val headers by param(H, P4.INOUT)
+    val parseError by param(P4.errorType, P4.IN)
+    val inCtrl by param(P4.typeName("InControl"), P4.IN)
+    val outCtrl by param(P4.typeName("OutControl"), P4.OUT)
+  }
+
+  val Deparser by controlTypeDecl {
+    val H by typeParam()
+    val outputHeaders by param(H, P4.INOUT)
+    val b by param(core.packet_out)
+  }
+
+  val VSS by packageTypeDecl {
+    val H by typeParam()
+    val p by param(P4.typeName("Parser"))
+    val map by param(P4.typeName("Pipe"))
+    val d by param(P4.typeName("Deparser"))
+  }
 
   val Ck16 by extern {
     constructor_()

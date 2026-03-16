@@ -17,10 +17,6 @@ sealed class P4Type {
 
   data object Error : P4Type()
 
-  data object PacketIn : P4Type()
-
-  data object PacketOut : P4Type()
-
   data object P4String : P4Type()
 
   data class Var(val name: String) : P4Type()
@@ -120,6 +116,13 @@ data class P4Parser(
   val states: List<P4ParserState>,
 ) : P4Declaration
 
+data class P4TypeDecl(
+  val kind: String,
+  val name: String,
+  val typeParams: List<String>,
+  val params: List<P4Param>,
+) : P4Declaration
+
 data class P4PackageInstance(val typeName: String, val args: List<String>, val name: String) :
   P4Declaration
 
@@ -138,8 +141,6 @@ object P4 {
   val void_ = P4Type.Void
   val string_ = P4Type.P4String
   val errorType = P4Type.Error
-  val packet_in = P4Type.PacketIn
-  val packet_out = P4Type.PacketOut
 
   fun typeName(name: String) = P4Type.Named(name)
 
@@ -261,6 +262,22 @@ object P4 {
         },
         register = { declarations.add(it) },
       )
+
+    private fun typeDecl(kind: String, block: TypeDeclBuilder.() -> Unit) =
+      DeclDelegate<P4TypeDecl>(
+        factory = { name ->
+          val builder = TypeDeclBuilder()
+          builder.block()
+          P4TypeDecl(kind, name, builder.typeParams(), builder.params())
+        },
+        register = { declarations.add(it) },
+      )
+
+    protected fun parserTypeDecl(block: TypeDeclBuilder.() -> Unit) = typeDecl("parser", block)
+
+    protected fun controlTypeDecl(block: TypeDeclBuilder.() -> Unit) = typeDecl("control", block)
+
+    protected fun packageTypeDecl(block: TypeDeclBuilder.() -> Unit) = typeDecl("package", block)
 
     protected fun errors(vararg members: String) {
       declarations.add(P4Error(members.toList()))

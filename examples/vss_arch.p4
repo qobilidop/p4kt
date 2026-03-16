@@ -20,6 +20,14 @@ const PortId CPU_OUT_PORT = 4w14;
 
 const PortId RECIRCULATE_OUT_PORT = 4w13;
 
+parser Parser<H>(packet_in b, out H parsedHeaders);
+
+control Pipe<H>(inout H headers, in error parseError, in InControl inCtrl, out OutControl outCtrl);
+
+control Deparser<H>(inout H outputHeaders, packet_out b);
+
+package VSS<H>(Parser p, Pipe map, Deparser d);
+
 extern Ck16 {
     Ck16();
     void clear();

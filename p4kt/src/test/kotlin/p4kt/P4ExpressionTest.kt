@@ -119,12 +119,8 @@ class P4ExpressionTest {
   }
 
   @Test
-  fun packetInType() {
-    assertEquals("packet_in", P4Type.PacketIn.toP4())
-  }
-
-  @Test
-  fun packetOutType() {
-    assertEquals("packet_out", P4Type.PacketOut.toP4())
+  fun namedTypeRendering() {
+    assertEquals("packet_in", P4Type.Named("packet_in").toP4())
+    assertEquals("packet_out", P4Type.Named("packet_out").toP4())
   }
 }

@@ -9,8 +9,6 @@ fun P4Type.toP4(): String =
     is P4Type.Bool -> "bool"
     is P4Type.Void -> "void"
     is P4Type.Error -> "error"
-    is P4Type.PacketIn -> "packet_in"
-    is P4Type.PacketOut -> "packet_out"
     is P4Type.P4String -> "string"
     is P4Type.Var -> name
   }
@@ -183,6 +181,12 @@ fun P4ExternFunction.toP4(): String {
 
 fun P4ExternInstance.toP4(): String = "$typeName() $name;"
 
+fun P4TypeDecl.toP4(): String {
+  val typeParamStr = if (typeParams.isNotEmpty()) "<${typeParams.joinToString(", ")}>" else ""
+  val paramStr = params.joinToString(", ") { it.toP4() }
+  return "$kind $name$typeParamStr($paramStr);"
+}
+
 fun P4PackageInstance.toP4(): String {
   val argsStr = args.joinToString(", ") { "$it()" }
   return "$typeName($argsStr) $name;"
@@ -229,6 +233,7 @@ fun P4Declaration.toP4(): String =
     is P4ExternFunction -> (this as P4ExternFunction).toP4()
     is P4ExternInstance -> (this as P4ExternInstance).toP4()
     is P4Parser -> (this as P4Parser).toP4()
+    is P4TypeDecl -> (this as P4TypeDecl).toP4()
     is P4PackageInstance -> (this as P4PackageInstance).toP4()
     is P4MatchKindDeclaration -> (this as P4MatchKindDeclaration).toP4()
   }
