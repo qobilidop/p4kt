@@ -48,7 +48,7 @@ val vss_example =
     val TopParser by parser {
       val b by param(core.packet_in)
       val p by param(::Parsed_packet, P4.OUT)
-      val ck by externInstance(vss_arch.Ck16)
+      val ck by externInstance(vss.Ck16)
 
       val parse_ipv4 by state {
         call(b, "extract", p.ip)
@@ -69,16 +69,16 @@ val vss_example =
     val TopPipe by control {
       val headers by param(::Parsed_packet, P4.INOUT)
       val parseError by param(P4.errorType, P4.IN)
-      val inCtrl by param(vss_arch::InControl, P4.IN)
-      val outCtrl by param(vss_arch::OutControl, P4.OUT)
+      val inCtrl by param(vss::InControl, P4.IN)
+      val outCtrl by param(vss::OutControl, P4.OUT)
 
-      val Drop_action by action { assign(outCtrl.outputPort, vss_arch.DROP_PORT.ref) }
+      val Drop_action by action { assign(outCtrl.outputPort, vss.DROP_PORT.ref) }
 
       val nextHop by varDecl(IPv4Address)
 
       val Set_nhop by action {
         val ipv4_dest by param(IPv4Address)
-        val port by param(vss_arch.PortId)
+        val port by param(vss.PortId)
         assign(nextHop, ipv4_dest)
         assign(headers.ip.ttl, headers.ip.ttl - P4.lit(1))
         assign(outCtrl.outputPort, port)
@@ -91,7 +91,7 @@ val vss_example =
         defaultAction(Drop_action)
       }
 
-      val Send_to_cpu by action { assign(outCtrl.outputPort, vss_arch.CPU_OUT_PORT.ref) }
+      val Send_to_cpu by action { assign(outCtrl.outputPort, vss.CPU_OUT_PORT.ref) }
 
       val check_ttl by table {
         key(headers.ip.ttl, core.match_kind.exact)
@@ -131,13 +131,13 @@ val vss_example =
         }
 
         ipv4_match.apply_()
-        if_(outCtrl.outputPort eq vss_arch.DROP_PORT.ref) { return_() }
+        if_(outCtrl.outputPort eq vss.DROP_PORT.ref) { return_() }
 
         check_ttl.apply_()
-        if_(outCtrl.outputPort eq vss_arch.CPU_OUT_PORT.ref) { return_() }
+        if_(outCtrl.outputPort eq vss.CPU_OUT_PORT.ref) { return_() }
 
         dmac.apply_()
-        if_(outCtrl.outputPort eq vss_arch.DROP_PORT.ref) { return_() }
+        if_(outCtrl.outputPort eq vss.DROP_PORT.ref) { return_() }
 
         smac.apply_()
       }
@@ -146,7 +146,7 @@ val vss_example =
     val TopDeparser by control {
       val p by param(::Parsed_packet, P4.INOUT)
       val b by param(core.packet_out)
-      val ck by externInstance(vss_arch.Ck16)
+      val ck by externInstance(vss.Ck16)
 
       apply {
         call(b, "emit", p.ethernet)

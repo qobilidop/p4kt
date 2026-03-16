@@ -11,9 +11,9 @@ class GoldenTest {
   }
 
   @Test
-  fun vssArchMatchesGoldenFile() {
-    val expected = java.io.File("examples/vss_arch.p4").readText()
-    assertEquals(expected, vss_arch.toP4())
+  fun vssMatchesGoldenFile() {
+    val expected = java.io.File("examples/vss.p4").readText()
+    assertEquals(expected, vss.toP4())
   }
 
   @Test

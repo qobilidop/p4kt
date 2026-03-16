@@ -9,7 +9,7 @@ import p4kt.p4include.core
 // Corresponds to:
 // https://github.com/p4lang/p4c/blob/main/testdata/p4_16_samples/very_simple_model.p4
 
-object vss_arch : P4.Library() {
+object vss : P4.Library() {
   init {
     include(core)
   }
