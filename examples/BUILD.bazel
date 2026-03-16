@@ -15,15 +15,23 @@ kt_jvm_library(
     ],
 )
 
+kt_jvm_library(
+    name = "v1model_basic_lib",
+    srcs = ["v1model_basic.kt"],
+    deps = ["//p4kt:p4include"],
+)
+
 kt_jvm_test(
     name = "GoldenTest",
     srcs = ["GoldenTest.kt"],
     data = [
+        "v1model_basic.p4",
         "vss_arch.p4",
         "vss_example.p4",
     ],
     test_class = "p4kt.examples.GoldenTest",
     deps = [
+        ":v1model_basic_lib",
         ":vss_arch_lib",
         ":vss_example_lib",
         "//p4kt:p4include",
