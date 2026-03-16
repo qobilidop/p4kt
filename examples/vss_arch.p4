@@ -28,7 +28,7 @@ control Pipe<H>(inout H headers, in error parseError, in InControl inCtrl, out O
 
 control Deparser<H>(inout H outputHeaders, packet_out b);
 
-package VSS<H>(Parser p, Pipe map, Deparser d);
+package VSS<H>(Parser<H> p, Pipe<H> map, Deparser<H> d);
 
 extern Ck16 {
     Ck16();

@@ -7,7 +7,8 @@ fun P4Include.toP4(): String = if (isSystem) "#include <$path>" else "#include \
 fun P4Type.toP4(): String =
   when (this) {
     is P4Type.Bit -> "bit<$width>"
-    is P4Type.Named -> name
+    is P4Type.Named ->
+      if (typeArgs.isEmpty()) name else "$name<${typeArgs.joinToString(", ") { it.toP4() }}>"
     is P4Type.Bool -> "bool"
     is P4Type.Void -> "void"
     is P4Type.Error -> "error"

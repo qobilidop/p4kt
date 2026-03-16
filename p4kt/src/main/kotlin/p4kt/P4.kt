@@ -9,7 +9,7 @@ import kotlin.properties.ReadOnlyProperty
 sealed class P4Type {
   data class Bit(val width: Int) : P4Type()
 
-  data class Named(val name: String) : P4Type()
+  data class Named(val name: String, val typeArgs: List<P4Type> = emptyList()) : P4Type()
 
   data object Bool : P4Type()
 
@@ -126,6 +126,8 @@ data class P4TypeDecl(
 ) : P4Declaration, P4TypeReference {
   override val typeRef
     get() = P4Type.Named(name)
+
+  operator fun invoke(vararg typeArgs: P4Type): P4Type.Named = P4Type.Named(name, typeArgs.toList())
 }
 
 data class P4PackageInstance(val typeName: String, val args: List<String>, val name: String) :

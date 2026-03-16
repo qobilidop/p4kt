@@ -63,9 +63,9 @@ object vss_arch : P4.Library() {
 
   val VSS by packageTypeDecl {
     val H by typeParam()
-    val p by param(Parser)
-    val map by param(Pipe)
-    val d by param(Deparser)
+    val p by param(Parser(H))
+    val map by param(Pipe(H))
+    val d by param(Deparser(H))
   }
 
   val Ck16 by extern {

@@ -103,4 +103,45 @@ class P4TypeDeclTest {
       )
     assertEquals("package VSS<H>(Parser p, Pipe map, Deparser d);", decl.toP4())
   }
+
+  @Test
+  fun parameterizedTypeReference() {
+    val decl =
+      P4TypeDecl(
+        kind = "package",
+        name = "VSS",
+        typeParams = listOf("H"),
+        params =
+          listOf(
+            P4Param("p", P4Type.Named("Parser", listOf(P4Type.Var("H"))), null),
+            P4Param("map", P4Type.Named("Pipe", listOf(P4Type.Var("H"))), null),
+          ),
+      )
+    assertEquals("package VSS<H>(Parser<H> p, Pipe<H> map);", decl.toP4())
+  }
+
+  @Test
+  fun typeDeclInvokeCreatesParameterizedType() {
+    @Suppress("UnusedPrivateProperty")
+    val lib =
+      object : P4.Library() {
+        val Parser by parserTypeDecl {
+          val H by typeParam()
+          val b by param(P4.typeName("packet_in"))
+        }
+        val VSS by packageTypeDecl {
+          val H by typeParam()
+          val p by param(Parser(H))
+        }
+      }
+    assertEquals(
+      """
+          parser Parser<H>(packet_in b);
+
+          package VSS<H>(Parser<H> p);
+      """
+        .trimIndent(),
+      lib.toP4(),
+    )
+  }
 }
