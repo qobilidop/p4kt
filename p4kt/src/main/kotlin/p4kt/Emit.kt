@@ -11,6 +11,8 @@ fun P4Type.toP4(): String =
     is P4Type.Error -> "error"
     is P4Type.PacketIn -> "packet_in"
     is P4Type.PacketOut -> "packet_out"
+    is P4Type.P4String -> "string"
+    is P4Type.Var -> name
   }
 
 fun Direction.toP4(): String =
@@ -122,12 +124,12 @@ fun P4Action.toP4(): String {
   }
 }
 
-fun MatchKind.toP4(): String =
-  when (this) {
-    MatchKind.EXACT -> "exact"
-    MatchKind.LPM -> "lpm"
-    MatchKind.TERNARY -> "ternary"
-  }
+fun P4MatchKindRef.toP4(): String = name
+
+fun P4MatchKindDeclaration.toP4(): String {
+  val membersStr = members.joinToString(",\n") { "    $it" }
+  return "match_kind {\n$membersStr\n}"
+}
 
 fun P4LocalVar.toP4(): String = "${type.toP4()} $name;"
 
@@ -160,16 +162,23 @@ fun P4Error.toP4(): String {
 
 fun P4ExternMethod.toP4(externName: String): String {
   val paramStr = params.joinToString(", ") { it.toP4() }
+  val typeParamStr = if (typeParams.isNotEmpty()) "<${typeParams.joinToString(", ")}>" else ""
   return if (name == externName) {
     "$name($paramStr);"
   } else {
-    "${returnType.toP4()} $name($paramStr);"
+    "${returnType.toP4()} $name$typeParamStr($paramStr);"
   }
 }
 
 fun P4Extern.toP4(): String {
   val methodsStr = methods.joinToString("\n") { "    ${it.toP4(name)}" }
   return "extern $name {\n$methodsStr\n}"
+}
+
+fun P4ExternFunction.toP4(): String {
+  val paramStr = params.joinToString(", ") { it.toP4() }
+  val typeParamStr = if (typeParams.isNotEmpty()) "<${typeParams.joinToString(", ")}>" else ""
+  return "extern ${returnType.toP4()} $name$typeParamStr($paramStr);"
 }
 
 fun P4ExternInstance.toP4(): String = "$typeName() $name;"
@@ -217,7 +226,9 @@ fun P4Declaration.toP4(): String =
     is P4LocalVar -> (this as P4LocalVar).toP4()
     is P4Error -> (this as P4Error).toP4()
     is P4Extern -> (this as P4Extern).toP4()
+    is P4ExternFunction -> (this as P4ExternFunction).toP4()
     is P4ExternInstance -> (this as P4ExternInstance).toP4()
     is P4Parser -> (this as P4Parser).toP4()
     is P4PackageInstance -> (this as P4PackageInstance).toP4()
+    is P4MatchKindDeclaration -> (this as P4MatchKindDeclaration).toP4()
   }

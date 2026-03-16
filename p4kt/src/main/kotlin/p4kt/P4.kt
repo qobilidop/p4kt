@@ -20,6 +20,10 @@ sealed class P4Type {
   data object PacketIn : P4Type()
 
   data object PacketOut : P4Type()
+
+  data object P4String : P4Type()
+
+  data class Var(val name: String) : P4Type()
 }
 
 enum class Direction {
@@ -28,11 +32,7 @@ enum class Direction {
   INOUT,
 }
 
-enum class MatchKind {
-  EXACT,
-  LPM,
-  TERNARY,
-}
+data class P4MatchKindRef(val name: String)
 
 sealed class P4Expr {
   data class Ref(val name: String) : P4Expr()
@@ -105,6 +105,8 @@ data class P4Control(
 
 data class P4Error(val members: List<String>) : P4Declaration
 
+data class P4MatchKindDeclaration(val members: List<String>) : P4Declaration
+
 data class P4Extern(val name: String, val methods: List<P4ExternMethod>) :
   P4Declaration, P4TypeReference {
   override val typeRef
@@ -134,6 +136,7 @@ object P4 {
 
   val bool_ = P4Type.Bool
   val void_ = P4Type.Void
+  val string_ = P4Type.P4String
   val errorType = P4Type.Error
   val packet_in = P4Type.PacketIn
   val packet_out = P4Type.PacketOut
@@ -159,12 +162,6 @@ object P4 {
   val IN = Direction.IN
   val OUT = Direction.OUT
   val INOUT = Direction.INOUT
-
-  // Match kind constants
-
-  val LPM = MatchKind.LPM
-  val EXACT = MatchKind.EXACT
-  val TERNARY = MatchKind.TERNARY
 
   // StructRef and HeaderRef
 
@@ -197,17 +194,23 @@ object P4 {
   abstract class Library {
     private val declarations = mutableListOf<P4Declaration>()
 
-    protected fun typedef(name: String, type: P4Type): P4Typedef {
-      val td = P4Typedef(name, type)
-      declarations.add(td)
-      return td
-    }
+    protected fun typedef(type: P4Type) =
+      DeclDelegate<P4Typedef>(
+        factory = { name -> P4Typedef(name, type) },
+        register = { declarations.add(it) },
+      )
 
-    protected fun const_(name: String, type: P4Type, value: P4Expr): P4Const {
-      val c = P4Const(name, type, value)
-      declarations.add(c)
-      return c
-    }
+    protected fun const_(type: P4Type, value: P4Expr) =
+      DeclDelegate<P4Const>(
+        factory = { name -> P4Const(name, type, value) },
+        register = { declarations.add(it) },
+      )
+
+    protected fun const_(type: P4TypeReference, value: P4Expr) =
+      DeclDelegate<P4Const>(
+        factory = { name -> P4Const(name, type.typeRef, value) },
+        register = { declarations.add(it) },
+      )
 
     protected fun <T : StructRef> struct(factory: (P4Expr) -> T) {
       val dummy = factory(P4Expr.Ref(""))
@@ -219,19 +222,99 @@ object P4 {
       declarations.add(P4Header(dummy::class.simpleName!!, dummy.fields.toList()))
     }
 
-    protected fun extern(name: String, block: ExternBuilder.() -> Unit): P4Extern {
-      val builder = ExternBuilder(name)
-      builder.block()
-      val ext = builder.build()
-      declarations.add(ext)
-      return ext
-    }
+    protected fun action(block: ActionBuilder.() -> Unit) =
+      DeclDelegate<P4Action>(
+        factory = { name -> P4.action(name, block) },
+        register = { declarations.add(it) },
+      )
+
+    protected fun extern(block: ExternBuilder.() -> Unit) =
+      DeclDelegate<P4Extern>(
+        factory = { name ->
+          val builder = ExternBuilder(name)
+          builder.block()
+          builder.build()
+        },
+        register = { declarations.add(it) },
+      )
+
+    protected fun externFunction(returnType: P4Type, block: ExternMethodBuilder.() -> Unit) =
+      DeclDelegate<P4ExternFunction>(
+        factory = { name ->
+          val builder = ExternMethodBuilder()
+          builder.block()
+          P4ExternFunction(name, returnType, builder.params(), builder.typeParams())
+        },
+        register = { declarations.add(it) },
+      )
+
+    protected fun externFunctionOverload(
+      original: P4ExternFunction,
+      returnType: P4Type,
+      block: ExternMethodBuilder.() -> Unit,
+    ) =
+      DeclDelegate<P4ExternFunction>(
+        factory = { _ ->
+          val builder = ExternMethodBuilder()
+          builder.block()
+          P4ExternFunction(original.name, returnType, builder.params(), builder.typeParams())
+        },
+        register = { declarations.add(it) },
+      )
 
     protected fun errors(vararg members: String) {
       declarations.add(P4Error(members.toList()))
     }
 
+    protected fun register(errorDecl: ErrorDecl) {
+      declarations.add(P4Error(errorDecl.members()))
+    }
+
+    protected fun register(matchKindDecl: MatchKindDecl) {
+      declarations.add(P4MatchKindDeclaration(matchKindDecl.members()))
+    }
+
     fun toP4() = P4Program(declarations).toP4()
+  }
+
+  // Error declaration base class
+
+  abstract class ErrorDecl {
+    private val members = mutableListOf<String>()
+
+    protected fun member() = ErrorMemberDelegate(members)
+
+    fun members() = members.toList()
+  }
+
+  class ErrorMemberDelegate(private val members: MutableList<String>) {
+    operator fun provideDelegate(
+      thisRef: Any?,
+      property: kotlin.reflect.KProperty<*>,
+    ): ReadOnlyProperty<Any?, P4Expr.ErrorMember> {
+      members.add(property.name)
+      return ReadOnlyProperty { _, _ -> P4Expr.ErrorMember(property.name) }
+    }
+  }
+
+  // Match kind declaration base class
+
+  abstract class MatchKindDecl {
+    private val members = mutableListOf<String>()
+
+    protected fun member() = MatchKindMemberDelegate(members)
+
+    fun members() = members.toList()
+  }
+
+  class MatchKindMemberDelegate(private val members: MutableList<String>) {
+    operator fun provideDelegate(
+      thisRef: Any?,
+      property: kotlin.reflect.KProperty<*>,
+    ): ReadOnlyProperty<Any?, P4MatchKindRef> {
+      members.add(property.name)
+      return ReadOnlyProperty { _, _ -> P4MatchKindRef(property.name) }
+    }
   }
 
   // Field delegates (used inside StructRef/HeaderRef)

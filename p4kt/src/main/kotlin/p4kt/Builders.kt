@@ -44,7 +44,7 @@ enum class BinOpKind {
   NE,
 }
 
-data class P4KeyEntry(val expr: P4Expr, val matchKind: MatchKind)
+data class P4KeyEntry(val expr: P4Expr, val matchKind: P4MatchKindRef)
 
 data class P4LocalVar(val name: String, val type: P4Type) : P4Declaration
 
@@ -55,7 +55,19 @@ data class P4Function(
   val body: List<P4Statement>,
 ) : P4Declaration
 
-data class P4ExternMethod(val name: String, val returnType: P4Type, val params: List<P4Param>)
+data class P4ExternFunction(
+  val name: String,
+  val returnType: P4Type,
+  val params: List<P4Param>,
+  val typeParams: List<String> = emptyList(),
+) : P4Declaration
+
+data class P4ExternMethod(
+  val name: String,
+  val returnType: P4Type,
+  val params: List<P4Param>,
+  val typeParams: List<String> = emptyList(),
+)
 
 data class P4ExternInstance(val typeName: String, val name: String) : P4Declaration
 
@@ -316,7 +328,7 @@ class TableBuilder {
   private var defaultAction: String = ""
   private var isDefaultActionConst: Boolean = false
 
-  fun key(expr: P4Expr, matchKind: MatchKind) {
+  fun key(expr: P4Expr, matchKind: P4MatchKindRef) {
     keys.add(P4KeyEntry(expr, matchKind))
   }
 
@@ -347,15 +359,93 @@ class TableBuilder {
   fun build(name: String) = P4Table(name, keys, actions, size, defaultAction, isDefaultActionConst)
 }
 
+class TypeParamDelegate(private val typeParams: MutableList<String>) {
+  operator fun provideDelegate(
+    thisRef: Any?,
+    property: kotlin.reflect.KProperty<*>,
+  ): ReadOnlyProperty<Any?, P4Type.Var> {
+    typeParams.add(property.name)
+    return ReadOnlyProperty { _, _ -> P4Type.Var(property.name) }
+  }
+}
+
 @P4DslMarker
 class ExternMethodBuilder {
   private val params = mutableListOf<P4Param>()
+  private val typeParams = mutableListOf<String>()
+  private var returnType: P4Type = P4Type.Void
+
+  fun typeParam() = TypeParamDelegate(typeParams)
+
+  fun returnType(type: P4Type) {
+    returnType = type
+  }
 
   fun param(type: P4Type, direction: Direction) = ParamDelegate(params, type, direction)
 
   fun param(type: P4Type) = ParamDelegate(params, type)
 
   fun params() = params.toList()
+
+  fun typeParams() = typeParams.toList()
+
+  fun returnType() = returnType
+}
+
+data class MethodRef(val name: String)
+
+class MethodDelegate(
+  private val methods: MutableList<P4ExternMethod>,
+  private val returnType: P4Type,
+  private val block: (ExternMethodBuilder.() -> Unit)?,
+) {
+  operator fun provideDelegate(
+    thisRef: Any?,
+    property: kotlin.reflect.KProperty<*>,
+  ): ReadOnlyProperty<Any?, MethodRef> {
+    if (block != null) {
+      val builder = ExternMethodBuilder()
+      builder.block()
+      methods.add(P4ExternMethod(property.name, returnType, builder.params(), builder.typeParams()))
+    } else {
+      methods.add(P4ExternMethod(property.name, returnType, emptyList()))
+    }
+    return ReadOnlyProperty { _, _ -> MethodRef(property.name) }
+  }
+}
+
+class MethodDelegateWithReturnType(
+  private val methods: MutableList<P4ExternMethod>,
+  private val block: ExternMethodBuilder.() -> Unit,
+) {
+  operator fun provideDelegate(
+    thisRef: Any?,
+    property: kotlin.reflect.KProperty<*>,
+  ): ReadOnlyProperty<Any?, MethodRef> {
+    val builder = ExternMethodBuilder()
+    builder.block()
+    methods.add(
+      P4ExternMethod(property.name, builder.returnType(), builder.params(), builder.typeParams())
+    )
+    return ReadOnlyProperty { _, _ -> MethodRef(property.name) }
+  }
+}
+
+class OverloadDelegate(
+  private val methods: MutableList<P4ExternMethod>,
+  private val originalName: String,
+  private val returnType: P4Type,
+  private val block: ExternMethodBuilder.() -> Unit,
+) {
+  operator fun provideDelegate(
+    thisRef: Any?,
+    property: kotlin.reflect.KProperty<*>,
+  ): ReadOnlyProperty<Any?, Unit> {
+    val builder = ExternMethodBuilder()
+    builder.block()
+    methods.add(P4ExternMethod(originalName, returnType, builder.params(), builder.typeParams()))
+    return ReadOnlyProperty { _, _ -> }
+  }
 }
 
 @P4DslMarker
@@ -366,15 +456,15 @@ class ExternBuilder(private val name: String) {
     methods.add(P4ExternMethod(name, P4Type.Void, emptyList()))
   }
 
-  fun method(name: String, returnType: P4Type) {
-    methods.add(P4ExternMethod(name, returnType, emptyList()))
-  }
+  fun method(returnType: P4Type) = MethodDelegate(methods, returnType, null)
 
-  fun method(name: String, returnType: P4Type, block: ExternMethodBuilder.() -> Unit) {
-    val builder = ExternMethodBuilder()
-    builder.block()
-    methods.add(P4ExternMethod(name, returnType, builder.params()))
-  }
+  fun method(returnType: P4Type, block: ExternMethodBuilder.() -> Unit) =
+    MethodDelegate(methods, returnType, block)
+
+  fun method(block: ExternMethodBuilder.() -> Unit) = MethodDelegateWithReturnType(methods, block)
+
+  fun overload(original: MethodRef, returnType: P4Type, block: ExternMethodBuilder.() -> Unit) =
+    OverloadDelegate(methods, original.name, returnType, block)
 
   fun build() = P4Extern(name, methods)
 }
