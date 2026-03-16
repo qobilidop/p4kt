@@ -8,19 +8,19 @@ struct InControl {
     PortId inputPort;
 }
 
-const PortId RECIRCULATE_IN_PORT = 4w13;
+const PortId RECIRCULATE_IN_PORT = 0xD;
 
-const PortId CPU_IN_PORT = 4w14;
+const PortId CPU_IN_PORT = 0xE;
 
 struct OutControl {
     PortId outputPort;
 }
 
-const PortId DROP_PORT = 4w15;
+const PortId DROP_PORT = 0xF;
 
-const PortId CPU_OUT_PORT = 4w14;
+const PortId CPU_OUT_PORT = 0xE;
 
-const PortId RECIRCULATE_OUT_PORT = 4w13;
+const PortId RECIRCULATE_OUT_PORT = 0xD;
 
 parser Parser<H>(packet_in b, out H parsedHeaders);
 

@@ -26,8 +26,8 @@ object vss_arch : P4.Library() {
     struct(::InControl)
   }
 
-  val RECIRCULATE_IN_PORT by const_(PortId.typeRef, P4.lit(4, 0xD))
-  val CPU_IN_PORT by const_(PortId.typeRef, P4.lit(4, 0xE))
+  val RECIRCULATE_IN_PORT by const_(PortId.typeRef, P4.hex(0xD))
+  val CPU_IN_PORT by const_(PortId.typeRef, P4.hex(0xE))
 
   class OutControl(base: P4Expr) : P4.StructRef(base) {
     val outputPort by field(PortId)
@@ -37,9 +37,9 @@ object vss_arch : P4.Library() {
     struct(::OutControl)
   }
 
-  val DROP_PORT by const_(PortId.typeRef, P4.lit(4, 0xF))
-  val CPU_OUT_PORT by const_(PortId.typeRef, P4.lit(4, 0xE))
-  val RECIRCULATE_OUT_PORT by const_(PortId.typeRef, P4.lit(4, 0xD))
+  val DROP_PORT by const_(PortId.typeRef, P4.hex(0xF))
+  val CPU_OUT_PORT by const_(PortId.typeRef, P4.hex(0xE))
+  val RECIRCULATE_OUT_PORT by const_(PortId.typeRef, P4.hex(0xD))
 
   val Parser by parserTypeDecl {
     val H by typeParam()

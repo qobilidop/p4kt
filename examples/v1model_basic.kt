@@ -12,7 +12,7 @@ import p4kt.p4include.v1model
 
 val v1model_basic =
   P4.program {
-    val TYPE_IPV4 by const_(P4.bit(16), P4.lit(0x800))
+    val TYPE_IPV4 by const_(P4.bit(16), P4.hex(0x800))
 
     val egressSpec_t by typedef(P4.bit(9))
     val macAddr_t by typedef(P4.bit(48))

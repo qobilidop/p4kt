@@ -38,6 +38,13 @@ sealed class P4Statement {
 
 data class P4Field(val name: String, val type: P4Type)
 
+enum class IntBase {
+  DEC,
+  HEX,
+  OCT,
+  BIN,
+}
+
 enum class BinOpKind {
   SUB,
   EQ,

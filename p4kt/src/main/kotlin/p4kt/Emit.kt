@@ -30,11 +30,20 @@ fun P4Param.toP4(): String =
     "${type.toP4()} $name"
   }
 
+fun IntBase.format(value: Long): String =
+  when (this) {
+    IntBase.DEC -> "$value"
+    IntBase.HEX -> "0x${value.toString(16).uppercase()}"
+    IntBase.OCT -> "0o${value.toString(8)}"
+    IntBase.BIN -> "0b${value.toString(2)}"
+  }
+
 fun P4Expr.toP4(): String =
   when (this) {
     is P4Expr.Ref -> name
-    is P4Expr.Lit -> "$value"
-    is P4Expr.TypedLit -> "${width}w${value}"
+    is P4Expr.Lit -> base.format(value)
+    is P4Expr.TypedLit -> "${width}w${base.format(value)}"
+    is P4Expr.SignedLit -> "${width}s${base.format(value)}"
     is P4Expr.FieldAccess -> "${expr.toP4()}.$field"
     is P4Expr.BinOp -> {
       val leftStr = if (left is P4Expr.BinOp) "(${left.toP4()})" else left.toP4()

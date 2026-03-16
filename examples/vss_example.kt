@@ -62,7 +62,7 @@ val vss_example =
 
       val start by state {
         call(b, "extract", p.ethernet)
-        select(p.ethernet.etherType) { P4.lit(0x0800) to parse_ipv4 }
+        select(p.ethernet.etherType) { P4.hex(0x0800) to parse_ipv4 }
       }
     }
 

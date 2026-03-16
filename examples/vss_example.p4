@@ -39,7 +39,7 @@ parser TopParser(packet_in b, out Parsed_packet p) {
     state start {
         b.extract(p.ethernet);
         transition select(p.ethernet.etherType) {
-            2048 : parse_ipv4;
+            0x800 : parse_ipv4;
         }
     }
     state parse_ipv4 {

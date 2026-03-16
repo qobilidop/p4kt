@@ -1,4 +1,4 @@
-const bit<16> TYPE_IPV4 = 2048;
+const bit<16> TYPE_IPV4 = 0x800;
 
 typedef bit<9> egressSpec_t;
 

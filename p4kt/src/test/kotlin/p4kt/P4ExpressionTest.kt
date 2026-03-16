@@ -118,6 +118,44 @@ class P4ExpressionTest {
     assertEquals("error", P4Type.Error.toP4())
   }
 
+  // Integer literal bases
+
+  @Test
+  fun untypedHexLiteral() {
+    assertEquals("0x800", P4Expr.Lit(0x800, IntBase.HEX).toP4())
+  }
+
+  @Test
+  fun untypedOctalLiteral() {
+    assertEquals("0o15", P4Expr.Lit(0xD, IntBase.OCT).toP4())
+  }
+
+  @Test
+  fun untypedBinaryLiteral() {
+    assertEquals("0b1101", P4Expr.Lit(0xD, IntBase.BIN).toP4())
+  }
+
+  @Test
+  fun typedHexLiteral() {
+    assertEquals("4w0xF", P4Expr.TypedLit(4, 0xF, IntBase.HEX).toP4())
+  }
+
+  @Test
+  fun signedTypedLiteral() {
+    assertEquals("32s0xFF", P4Expr.SignedLit(32, 0xFF, IntBase.HEX).toP4())
+  }
+
+  @Test
+  fun signedTypedDecimalLiteral() {
+    assertEquals("32s255", P4Expr.SignedLit(32, 255).toP4())
+  }
+
+  @Test
+  fun hexLiteralDsl() {
+    assertEquals("0xD", P4.hex(0xD).toP4())
+    assertEquals("4w0xF", P4.hex(4, 0xF).toP4())
+  }
+
   @Test
   fun namedTypeRendering() {
     assertEquals("packet_in", P4Type.Named("packet_in").toP4())

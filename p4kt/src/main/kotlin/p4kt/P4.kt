@@ -33,9 +33,11 @@ data class P4MatchKindRef(val name: String)
 sealed class P4Expr {
   data class Ref(val name: String) : P4Expr()
 
-  data class Lit(val value: Long) : P4Expr()
+  data class Lit(val value: Long, val base: IntBase = IntBase.DEC) : P4Expr()
 
-  data class TypedLit(val width: Int, val value: Long) : P4Expr()
+  data class TypedLit(val width: Int, val value: Long, val base: IntBase = IntBase.DEC) : P4Expr()
+
+  data class SignedLit(val width: Int, val value: Long, val base: IntBase = IntBase.DEC) : P4Expr()
 
   data class FieldAccess(val expr: P4Expr, val field: String) : P4Expr()
 
@@ -168,6 +170,14 @@ object P4 {
   fun lit(width: Int, value: Long) = P4Expr.TypedLit(width, value)
 
   fun lit(width: Int, value: Int) = P4Expr.TypedLit(width, value.toLong())
+
+  fun hex(value: Long) = P4Expr.Lit(value, IntBase.HEX)
+
+  fun hex(value: Int) = P4Expr.Lit(value.toLong(), IntBase.HEX)
+
+  fun hex(width: Int, value: Long) = P4Expr.TypedLit(width, value, IntBase.HEX)
+
+  fun hex(width: Int, value: Int) = P4Expr.TypedLit(width, value.toLong(), IntBase.HEX)
 
   fun error_(name: String) = P4Expr.ErrorMember(name)
 
