@@ -85,7 +85,7 @@ val vss_example =
       }
 
       val ipv4_match by table {
-        key(headers.ip.dstAddr, P4.LPM)
+        key(headers.ip.dstAddr, core.match_kind.lpm)
         actions(Drop_action, Set_nhop)
         size(1024)
         defaultAction(Drop_action)
@@ -94,7 +94,7 @@ val vss_example =
       val Send_to_cpu by action { assign(outCtrl.outputPort, vss_arch.CPU_OUT_PORT.ref) }
 
       val check_ttl by table {
-        key(headers.ip.ttl, P4.EXACT)
+        key(headers.ip.ttl, core.match_kind.exact)
         actions(Send_to_cpu)
         actionByName("NoAction")
         defaultAction("NoAction", const_ = true)
@@ -106,7 +106,7 @@ val vss_example =
       }
 
       val dmac by table {
-        key(nextHop, P4.EXACT)
+        key(nextHop, core.match_kind.exact)
         actions(Drop_action, Set_dmac)
         size(1024)
         defaultAction(Drop_action)
@@ -118,14 +118,14 @@ val vss_example =
       }
 
       val smac by table {
-        key(outCtrl.outputPort, P4.EXACT)
+        key(outCtrl.outputPort, core.match_kind.exact)
         actions(Drop_action, Set_smac)
         size(16)
         defaultAction(Drop_action)
       }
 
       apply {
-        if_(parseError ne P4.error_("NoError")) {
+        if_(parseError ne core.error.NoError) {
           call("Drop_action")
           return_()
         }

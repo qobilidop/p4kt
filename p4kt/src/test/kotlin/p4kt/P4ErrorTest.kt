@@ -35,4 +35,31 @@ class P4ErrorTest {
       program.toP4(),
     )
   }
+
+  @Test
+  fun errorDeclInLibrary() {
+    assertEquals(
+      """
+                error {
+                    NoError,
+                    PacketTooShort
+                }
+            """
+        .trimIndent(),
+      TestErrorLib.toP4(),
+    )
+    assertEquals("error.NoError", TestErrorLib.error.NoError.toP4())
+    assertEquals("error.PacketTooShort", TestErrorLib.error.PacketTooShort.toP4())
+  }
+}
+
+private object TestErrorLib : P4.Library() {
+  object error : P4.ErrorDecl() {
+    val NoError by member()
+    val PacketTooShort by member()
+  }
+
+  init {
+    register(error)
+  }
 }

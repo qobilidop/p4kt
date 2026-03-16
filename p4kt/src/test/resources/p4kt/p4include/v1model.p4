@@ -1,3 +1,9 @@
+match_kind {
+    range,
+    optional,
+    selector
+}
+
 typedef bit<9> PortId_t;
 
 struct standard_metadata_t {
@@ -25,4 +31,9 @@ extern action_profile {
 
 extern action_selector {
     action_selector();
+}
+
+extern Checksum16 {
+    Checksum16();
+    bit<16> get<D>(in D data);
 }

@@ -27,7 +27,7 @@ class P4ControlTest {
 
     val table =
       P4.table("ipv4_match") {
-        key(P4Expr.FieldAccess(P4Expr.Ref("headers"), "dstAddr"), P4.LPM)
+        key(P4Expr.FieldAccess(P4Expr.Ref("headers"), "dstAddr"), P4MatchKindRef("lpm"))
         actions(dropAction, setNhop)
         size(1024)
         defaultAction(dropAction)
@@ -56,7 +56,7 @@ class P4ControlTest {
         @Suppress("UnusedPrivateProperty", "VariableNaming") val nextHop by varDecl(IPv4Address)
 
         val ipv4_match by table {
-          key(P4Expr.FieldAccess(P4Expr.Ref("headers"), "dstAddr"), P4.LPM)
+          key(P4Expr.FieldAccess(P4Expr.Ref("headers"), "dstAddr"), P4MatchKindRef("lpm"))
           actions(Drop_action)
           size(1024)
           defaultAction(Drop_action)
@@ -157,7 +157,9 @@ class P4ControlTest {
       P4Table(
         name = "ipv4_match",
         keys =
-          listOf(P4KeyEntry(P4Expr.FieldAccess(P4Expr.Ref("headers"), "dstAddr"), MatchKind.LPM)),
+          listOf(
+            P4KeyEntry(P4Expr.FieldAccess(P4Expr.Ref("headers"), "dstAddr"), P4MatchKindRef("lpm"))
+          ),
         actions = listOf("Drop_action", "Set_nhop"),
         size = 1024,
         defaultAction = "Drop_action",
@@ -187,7 +189,9 @@ class P4ControlTest {
       P4Table(
         name = "check_ttl",
         keys =
-          listOf(P4KeyEntry(P4Expr.FieldAccess(P4Expr.Ref("headers"), "ttl"), MatchKind.EXACT)),
+          listOf(
+            P4KeyEntry(P4Expr.FieldAccess(P4Expr.Ref("headers"), "ttl"), P4MatchKindRef("exact"))
+          ),
         actions = listOf("Send_to_cpu", "NoAction"),
         defaultAction = "NoAction",
         isDefaultActionConst = true,
@@ -214,7 +218,7 @@ class P4ControlTest {
     val dropAction = P4.action("Drop") {}
     val table =
       P4.table("check_ttl") {
-        key(P4Expr.Ref("ttl"), P4.EXACT)
+        key(P4Expr.Ref("ttl"), P4MatchKindRef("exact"))
         actions(dropAction)
         actionByName("NoAction")
         defaultAction("NoAction", const_ = true)
