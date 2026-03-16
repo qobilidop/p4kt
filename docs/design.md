@@ -51,7 +51,7 @@ User code (DSL) → IR (immutable data classes) → Renderer (P4 source text)
 | parser                | `parser TopParser(...) { state start { ... } }`           | Done   |
 | extern declaration    | `extern Ck16 { void clear(); ... }`                       | Done   |
 | extern instantiation  | `Ck16() ck;`                                              | Done   |
-| package declaration   | `package VSS<H>(...)`                                     | Todo   |
+| package declaration   | `package VSS<H>(...)`                                     | Done   |
 | package instantiation | `VSS(...) main;`                                          | Done   |
 
 ### Expressions
@@ -111,6 +111,49 @@ User code (DSL) → IR (immutable data classes) → Renderer (P4 source text)
 - **Delegate-based declarations in Library**: All Library declarations (`typedef`, `const_`, `extern`, `action`, `externFunction`) use Kotlin property delegates to infer names. No string names needed - the Kotlin property name becomes the P4 declaration name.
 - **`P4.ErrorDecl` and `P4.MatchKindDecl`**: Error and match_kind declarations use nested objects with `member()` delegates, enabling IDE navigation (e.g., `core.error.NoError`, `core.match_kind.lpm`). Follows the P4 spec where both are sets of named members in global namespaces.
 - **Method overloads via `overload()`**: P4 allows multiple methods with the same name. Since Kotlin property names must be unique, overloads use `val name2 by overload(original, ...)` which reuses the original method's P4 name. Same pattern for `externFunctionOverload()`.
+
+## Ergonomics assessment
+
+An honest look at where the DSL reads well and where it doesn't, compared to writing P4 directly. Based on the VSS and v1model basic examples.
+
+### What reads well
+
+Declarations that map 1:1 to P4 are natural and concise:
+
+```kotlin
+val PortId by typedef(P4.bit(4))            // typedef bit<4> PortId;
+val DROP_PORT by const_(PortId.typeRef, ...) // const PortId DROP_PORT = 0xF;
+```
+
+Type declarations with type parameters are clean:
+
+```kotlin
+val Pipe by controlTypeDecl {
+    val H by typeParam()
+    val headers by param(H, P4.INOUT)
+    val inCtrl by param(::InControl, P4.IN)
+}
+```
+
+Parser states, table definitions, and control flow (`if_`, `apply`) are structurally close to P4 and easy to follow.
+
+### Inherent costs of embedding in Kotlin
+
+These are tradeoffs of the embedded DSL approach, not bugs to fix:
+
+- **`P4.` prefix on every type and literal** - `P4.bit(4)`, `P4.hex(0xD)`, `P4.lit(1)`, `P4.errorType`, `P4.INOUT`. P4 just writes `bit<4>`, `0xD`, `1`, `error`, `inout`. This is the biggest source of visual noise. Could potentially be reduced by importing helpers into builder scopes.
+
+- **`val X by` delegation** - every declaration requires this Kotlin boilerplate. P4 just writes `typedef bit<4> PortId;`. This is the cost of getting type-safe property names without strings.
+
+- **Two-step struct/header registration** - defining a class then calling `struct(::ClassName)` in an `init` block is verbose compared to P4's inline struct declaration. This is the cost of getting typed field access (`hdr.ipv4.ttl`) with IDE support.
+
+### Actionable improvements
+
+- **String-based references** - `actionByName("NoAction")`, `packageInstance("VSS", "main", "TopParser", ...)` lose type safety. These could be replaced with direct references as the DSL matures.
+
+- **Missing operators** - no `default` in select, no `&&`/`||`/`!`, no `+`/`&`/`|`/`^`. These force workarounds or incomplete examples. See `docs/examples.md` for the specific features blocking each future example.
+
+- **`P4.` noise reduction** - exploring whether builder scopes can provide `bit()`, `lit()`, `hex()` etc. directly (without the `P4.` prefix) would be the single highest-impact ergonomic improvement.
 
 ## Future ideas
 
