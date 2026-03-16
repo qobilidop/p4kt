@@ -1,3 +1,5 @@
+@file:Suppress("UnusedPrivateProperty")
+
 package p4kt.examples
 
 import p4kt.P4
@@ -43,7 +45,6 @@ val vss_example =
 
     errors("IPv4OptionsNotSupported", "IPv4IncorrectVersion", "IPv4ChecksumError")
 
-    @Suppress("UnusedPrivateProperty")
     val TopParser by parser {
       val b by param(core.packet_in)
       val p by param(::Parsed_packet, P4.OUT)
@@ -65,7 +66,6 @@ val vss_example =
       }
     }
 
-    @Suppress("UnusedPrivateProperty")
     val TopPipe by control {
       val headers by param(::Parsed_packet, P4.INOUT)
       val parseError by param(P4.errorType, P4.IN)
@@ -143,7 +143,6 @@ val vss_example =
       }
     }
 
-    @Suppress("UnusedPrivateProperty")
     val TopDeparser by control {
       val p by param(::Parsed_packet, P4.INOUT)
       val b by param(core.packet_out)
