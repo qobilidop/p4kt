@@ -7,7 +7,7 @@ import p4kt.P4Expr
 
 // Corresponds to: https://github.com/p4lang/p4c/blob/main/p4include/v1model.p4
 
-object v1model : P4.Library() {
+object v1model : P4.Library(P4.systemInclude("v1model.p4")) {
   object match_kind : P4.MatchKindDecl() {
     val range by member()
     val optional by member()

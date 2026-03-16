@@ -6,7 +6,7 @@ import p4kt.P4
 
 // Corresponds to: https://github.com/p4lang/p4c/blob/main/p4include/core.p4
 
-object core : P4.Library() {
+object core : P4.Library(P4.systemInclude("core.p4")) {
   object error : P4.ErrorDecl() {
     val NoError by member()
     val PacketTooShort by member()

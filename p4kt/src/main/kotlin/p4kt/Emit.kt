@@ -2,6 +2,8 @@
 
 package p4kt
 
+fun P4Include.toP4(): String = if (isSystem) "#include <$path>" else "#include \"$path\""
+
 fun P4Type.toP4(): String =
   when (this) {
     is P4Type.Bit -> "bit<$width>"
@@ -219,6 +221,7 @@ fun P4Parser.toP4(): String {
 @Suppress("CyclomaticComplexMethod")
 fun P4Declaration.toP4(): String =
   when (this) {
+    is P4Include -> (this as P4Include).toP4()
     is P4Function -> (this as P4Function).toP4()
     is P4Typedef -> (this as P4Typedef).toP4()
     is P4Header -> (this as P4Header).toP4()

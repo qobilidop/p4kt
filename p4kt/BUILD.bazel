@@ -97,6 +97,17 @@ kt_jvm_test(
 )
 
 kt_jvm_test(
+    name = "P4IncludeTest",
+    srcs = ["src/test/kotlin/p4kt/P4IncludeTest.kt"],
+    test_class = "p4kt.P4IncludeTest",
+    deps = [
+        ":p4kt",
+        "@maven//:org_jetbrains_kotlin_kotlin_test",
+        "@maven//:org_jetbrains_kotlin_kotlin_test_junit",
+    ],
+)
+
+kt_jvm_test(
     name = "P4ParserTest",
     srcs = ["src/test/kotlin/p4kt/P4ParserTest.kt"],
     test_class = "p4kt.P4ParserTest",

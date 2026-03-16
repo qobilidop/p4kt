@@ -54,6 +54,8 @@ sealed class P4Expr {
   fun call(method: String, vararg args: P4Expr) = MethodCall(this, method, args.toList())
 }
 
+data class P4Include(val path: String, val isSystem: Boolean) : P4Declaration
+
 sealed interface P4Declaration
 
 sealed interface P4TypeReference {
@@ -145,6 +147,12 @@ object P4 {
   val string_ = P4Type.P4String
   val errorType = P4Type.Error
 
+  // Include factories
+
+  fun systemInclude(path: String) = P4Include(path, isSystem = true)
+
+  fun localInclude(path: String) = P4Include(path, isSystem = false)
+
   fun typeName(name: String) = P4Type.Named(name)
 
   // Expression factories
@@ -195,8 +203,17 @@ object P4 {
 
   // Library base class
 
-  abstract class Library {
+  abstract class Library(val includePath: P4Include? = null) {
     private val declarations = mutableListOf<P4Declaration>()
+
+    protected fun include(inc: P4Include) {
+      declarations.add(inc)
+    }
+
+    protected fun include(library: Library) {
+      require(library.includePath != null) { "Library has no include path" }
+      declarations.add(library.includePath)
+    }
 
     protected fun typedef(type: P4Type) =
       DeclDelegate<P4Typedef>(
