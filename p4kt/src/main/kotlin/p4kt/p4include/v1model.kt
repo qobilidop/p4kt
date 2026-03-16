@@ -1,4 +1,4 @@
-@file:Suppress("MagicNumber", "MatchingDeclarationName", "ClassNaming")
+@file:Suppress("MagicNumber", "MatchingDeclarationName", "ClassNaming", "UnusedPrivateProperty")
 
 package p4kt.p4include
 
@@ -8,9 +8,17 @@ import p4kt.P4Expr
 // Corresponds to: https://github.com/p4lang/p4c/blob/main/p4include/v1model.p4
 
 object v1model : P4.Library() {
-  // TODO: match_kind { range, optional, selector } - needs match_kind IR support
+  object match_kind : P4.MatchKindDecl() {
+    val range by member()
+    val optional by member()
+    val selector by member()
+  }
 
-  val PortId_t = typedef("PortId_t", P4.bit(9))
+  init {
+    register(match_kind)
+  }
+
+  val PortId_t by typedef(P4.bit(9))
 
   class standard_metadata_t(base: P4Expr) : P4.StructRef(base) {
     val ingress_port by field(PortId_t)
@@ -40,24 +48,30 @@ object v1model : P4.Library() {
   // TODO: enum HashAlgorithm { crc32, ... }
   // TODO: enum CloneType { I2E, E2E }
 
-  // TODO: extern counter<I> - needs type parameters
-  // TODO: extern direct_counter
-  // TODO: extern meter<I>
-  // TODO: extern direct_meter<T>
-  // TODO: extern register<T, I>
+  // TODO: extern counter<I> - needs extern-level type params
+  // TODO: extern direct_counter - needs CounterType enum
+  // TODO: extern meter<I> - needs extern-level type params
+  // TODO: extern direct_meter<T> - needs extern-level type params
+  // TODO: extern register<T, I> - needs extern-level type params
 
-  val action_profile = extern("action_profile") { constructor_() }
+  val action_profile by extern { constructor_() }
 
-  val action_selector = extern("action_selector") { constructor_() }
+  val action_selector by extern { constructor_() }
 
-  // TODO: extern Checksum16 - get<D>() needs type parameters
+  val Checksum16 by extern {
+    constructor_()
+    val get by method {
+      val D by typeParam()
+      returnType(P4.bit(16))
+      val data by param(D, P4.IN)
+    }
+  }
 
-  // TODO: random<T>(), digest<T>(), hash<O,T,D,M>() - need type parameters
-  // TODO: verify_checksum<T,O>(), update_checksum<T,O>() - need type parameters
-  // TODO: clone(), resubmit<T>(), recirculate<T>() - need type parameters
-  // TODO: mark_to_drop() - needs function declaration in Library
-  // TODO: assert(), assume(), log_msg() - need function declaration in Library
-  // TODO: truncate()
+  // TODO: random<T>(), digest<T>(), hash<O,T,D,M>() - need extern function IR
+  // TODO: verify_checksum<T,O>(), update_checksum<T,O>() - need extern function IR
+  // TODO: clone(), resubmit<T>(), recirculate<T>() - need extern function IR
+  // TODO: mark_to_drop(), truncate() - need extern function IR
+  // TODO: assert(), assume(), log_msg() - need extern function IR
 
   // TODO: Parser<H, M>, VerifyChecksum<H, M>, Ingress<H, M>, Egress<H, M>,
   //       ComputeChecksum<H, M>, Deparser<H> - need abstract/type parameter support

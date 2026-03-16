@@ -12,22 +12,21 @@ private class TestMyStruct(base: P4Expr) : P4.StructRef(base) {
 @Suppress("MagicNumber")
 private val testLib =
   object : P4.Library() {
-    val PortId = typedef("PortId", P4.bit(4))
-    val DROP_PORT = const_("DROP_PORT", PortId.typeRef, P4.lit(4, 0xF))
+    val PortId by typedef(P4.bit(4))
+    val DROP_PORT by const_(PortId.typeRef, P4.lit(4, 0xF))
 
     init {
       struct(::TestMyStruct)
     }
   }
 
-@Suppress("MagicNumber")
+@Suppress("MagicNumber", "UnusedPrivateProperty")
 private val testLibExtern =
   object : P4.Library() {
-    val Ck16 =
-      extern("Ck16") {
-        constructor_()
-        method("get", P4.bit(16))
-      }
+    val Ck16 by extern {
+      constructor_()
+      val get by method(P4.bit(16))
+    }
   }
 
 class P4ProgramTest {
